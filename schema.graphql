@@ -1,0 +1,711 @@
+type OstiumPairsInfos_AccFundingFeesStored {
+  id: ID!
+  pairIndex: BigInt!
+  valueLong: BigInt!
+  valueShort: BigInt!
+  lastFundingRate: BigInt!
+  velocity: BigInt!
+}
+
+type OstiumPairsInfos_AccFundingFeesStoredV2 {
+  id: ID!
+  pairIndex: BigInt!
+  valueLong: BigInt!
+  valueShort: BigInt!
+  lastOiDelta: BigInt!
+  lastFundingRate: BigInt!
+}
+
+type OstiumPairsInfos_AccRolloverFeesStored {
+  id: ID!
+  pairIndex: BigInt!
+  value: BigInt!
+}
+
+type OstiumPairsInfos_FeesCharged {
+  id: ID!
+  orderId: BigInt!
+  tradeId: BigInt!
+  trader: String!
+  rolloverFees: BigInt!
+  fundingFees: BigInt!
+}
+
+type OstiumPairsInfos_FundingFeeSlopeUpdated {
+  id: ID!
+  pairIndex: BigInt!
+  value: BigInt!
+}
+
+type OstiumPairsInfos_HillParamsUpdated {
+  id: ID!
+  pairIndex: BigInt!
+  hillInflectionPoint: BigInt!
+  hillPosScale: BigInt!
+  hillNegScale: BigInt!
+}
+
+type OstiumPairsInfos_Initialized {
+  id: ID!
+  version: BigInt!
+}
+
+type OstiumPairsInfos_LastVelocityUpdated {
+  id: ID!
+  pairIndex: BigInt!
+  value: BigInt!
+}
+
+type OstiumPairsInfos_LiqMarginThresholdPUpdated {
+  id: ID!
+  value: BigInt!
+}
+
+type OstiumPairsInfos_LiqThresholdPUpdated {
+  id: ID!
+  value: BigInt!
+}
+
+type OstiumPairsInfos_ManagerUpdated {
+  id: ID!
+  value: String!
+}
+
+type OstiumPairsInfos_MaxFundingFeePerBlockUpdated {
+  id: ID!
+  pairIndex: BigInt!
+  value: BigInt!
+}
+
+type OstiumPairsInfos_MaxFundingFeeVelocityUpdated {
+  id: ID!
+  pairIndex: BigInt!
+  value: BigInt!
+}
+
+type OstiumPairsInfos_MaxNegativePnlOnOpenPUpdated {
+  id: ID!
+  value: BigInt!
+}
+
+type OstiumPairsInfos_MaxRolloverFeePerBlockUpdated {
+  id: ID!
+  pairIndex: BigInt!
+  value: BigInt!
+}
+
+type OstiumPairsInfos_MaxRolloverFeeSlopeUpdated {
+  id: ID!
+  pairIndex: BigInt!
+  value: BigInt!
+}
+
+type OstiumPairsInfos_MaxRolloverVolatilityUpdated {
+  id: ID!
+  pairIndex: BigInt!
+  value: BigInt!
+}
+
+type OstiumPairsInfos_PairFundingFeesUpdated {
+  id: ID!
+  pairIndex: BigInt!
+  value_0: BigInt!
+  value_1: BigInt!
+  value_2: BigInt!
+  value_3: BigInt!
+  value_4: BigInt!
+  value_5: BigInt!
+  value_6: BigInt!
+  value_7: BigInt!
+}
+
+type OstiumPairsInfos_PairFundingFeesUpdatedV2 {
+  id: ID!
+  pairIndex: BigInt!
+  value_0: BigInt!
+  value_1: BigInt!
+  value_2: BigInt!
+  value_3: BigInt!
+  value_4: BigInt!
+  value_5: BigInt!
+  value_6: BigInt!
+  value_7: BigInt!
+  value_8: BigInt!
+  value_9: BigInt!
+  value_10: BigInt!
+  value_11: BigInt!
+}
+
+type OstiumPairsInfos_PairOpeningFeesUpdated {
+  id: ID!
+  pairIndex: BigInt!
+  value_0: BigInt!
+  value_1: BigInt!
+  value_2: BigInt!
+  value_3: BigInt!
+  value_4: BigInt!
+  value_5: BigInt!
+}
+
+type OstiumPairsInfos_PairRolloverFeesUpdated {
+  id: ID!
+  pairIndex: BigInt!
+  value_0: BigInt!
+  value_1: BigInt!
+  value_2: BigInt!
+  value_3: BigInt!
+  value_4: BigInt!
+  value_5: BigInt!
+}
+
+type OstiumPairsInfos_RolloverFeePerBlockUpdated {
+  id: ID!
+  pairIndex: BigInt!
+  value: BigInt!
+  volatility: BigInt!
+}
+
+type OstiumPairsInfos_TradeInitialAccFeesStored {
+  id: ID!
+  tradeId: BigInt!
+  trader: String!
+  pairIndex: BigInt!
+  index: BigInt!
+  rollover: BigInt!
+  funding: BigInt!
+}
+
+type OstiumPairsInfos_VaultFeePercentUpdated {
+  id: ID!
+  pairIndex: BigInt!
+  value: BigInt!
+}
+
+type OstiumPairsStorage_PairAdded {
+  id: ID!
+  index: BigInt!
+  from: String!
+  to: String!
+}
+
+type OstiumPairsStorage_PairUpdated {
+  id: ID!
+  pairIndex: BigInt!
+}
+
+type OstiumPairsStorage_GroupUpdated {
+  id: ID!
+  index: BigInt!
+}
+
+type OstiumPairsStorage_FeeUpdated {
+  id: ID!
+  index: BigInt!
+}
+
+type OstiumPairsStorage_PairMaxLeverageUpdated {
+  id: ID!
+  pairIndex: BigInt!
+  maxLeverage: BigInt!
+}
+
+type OstiumPairsStorage_PairOvernightMaxLeverageUpdated {
+  id: ID!
+  pairIndex: BigInt!
+  overnightMaxLeverage: BigInt!
+}
+
+type OstiumTrading_MarketOpenOrderInitiated {
+  id: ID!
+  orderId: BigInt!
+  trader: String!
+  pairIndex: BigInt!
+}
+
+type OstiumTrading_MarketCloseOrderInitiated {
+  id: ID!
+  orderId: BigInt!
+  tradeId: BigInt!
+  trader: String!
+  pairIndex: BigInt!
+}
+
+type OstiumTrading_MarketCloseOrderInitiatedV2 {
+  id: ID!
+  orderId: BigInt!
+  tradeId: BigInt!
+  trader: String!
+  pairIndex: BigInt!
+  closePercentage: BigInt!
+}
+
+type OstiumTrading_OpenLimitCanceled {
+  id: ID!
+  trader: String!
+  pairIndex: BigInt!
+  index: BigInt!
+}
+
+type OstiumTrading_OpenLimitPlaced {
+  id: ID!
+  trader: String!
+  pairIndex: BigInt!
+  index: BigInt!
+}
+
+type OstiumTrading_AutomationOpenOrderInitiated {
+  id: ID!
+  orderId: BigInt!
+  trader: String!
+  pairIndex: BigInt!
+  index: BigInt!
+}
+
+type OstiumTrading_AutomationCloseOrderInitiated {
+  id: ID!
+  orderId: BigInt!
+  tradeId: BigInt!
+  trader: String!
+  pairIndex: BigInt!
+  index: BigInt!
+}
+
+type OstiumTrading_OpenLimitUpdated {
+  id: ID!
+  trader: String!
+  pairIndex: BigInt!
+  index: BigInt!
+  newPrice: BigInt!
+  newTp: BigInt!
+  newSl: BigInt!
+}
+
+type OstiumTrading_SlUpdated {
+  id: ID!
+  tradeId: BigInt!
+  trader: String!
+  pairIndex: BigInt!
+  index: BigInt!
+  newSl: BigInt!
+}
+
+type OstiumTrading_TpUpdated {
+  id: ID!
+  tradeId: BigInt!
+  trader: String!
+  pairIndex: BigInt!
+  index: BigInt!
+  newTp: BigInt!
+}
+
+type OstiumTrading_MarketOpenTimeoutExecuted {
+  id: ID!
+  orderId: BigInt!
+  order_0: BigInt!
+  order_1: BigInt!
+  order_2: BigInt!
+  order_3_0: BigInt!
+  order_3_1: BigInt!
+  order_3_2: BigInt!
+  order_3_3: BigInt!
+  order_3_4: String!
+  order_3_5: BigInt!
+  order_3_6: BigInt!
+  order_3_7: BigInt!
+  order_3_8: Boolean!
+}
+
+type OstiumTrading_MarketOpenTimeoutExecutedV2 {
+  id: ID!
+  orderId: BigInt!
+  order_0: BigInt!
+  order_1: BigInt!
+  order_2: BigInt!
+  order_3_0: BigInt!
+  order_3_1: BigInt!
+  order_3_2: BigInt!
+  order_3_3: BigInt!
+  order_3_4: String!
+  order_3_5: BigInt!
+  order_3_6: BigInt!
+  order_3_7: BigInt!
+  order_3_8: Boolean!
+  order_4: BigInt!
+}
+
+type OstiumTrading_MarketCloseTimeoutExecuted {
+  id: ID!
+  orderId: BigInt!
+  tradeId: BigInt!
+  order_0: BigInt!
+  order_1: BigInt!
+  order_2: BigInt!
+  order_3_0: BigInt!
+  order_3_1: BigInt!
+  order_3_2: BigInt!
+  order_3_3: BigInt!
+  order_3_4: String!
+  order_3_5: BigInt!
+  order_3_6: BigInt!
+  order_3_7: BigInt!
+  order_3_8: Boolean!
+}
+
+type OstiumTrading_MarketCloseTimeoutExecutedV2 {
+  id: ID!
+  orderId: BigInt!
+  tradeId: BigInt!
+  order_0: BigInt!
+  order_1: BigInt!
+  order_2: BigInt!
+  order_3_0: BigInt!
+  order_3_1: BigInt!
+  order_3_2: BigInt!
+  order_3_3: BigInt!
+  order_3_4: String!
+  order_3_5: BigInt!
+  order_3_6: BigInt!
+  order_3_7: BigInt!
+  order_3_8: Boolean!
+  order_4: BigInt!
+}
+
+type OstiumTrading_TopUpCollateralExecuted {
+  id: ID!
+  tradeId: BigInt!
+  trader: String!
+  pairIndex: BigInt!
+  topUpAmount: BigInt!
+  newLeverage: BigInt!
+}
+
+type OstiumTrading_RemoveCollateralInitiated {
+  id: ID!
+  tradeId: BigInt!
+  orderId: BigInt!
+  trader: String!
+  pairIndex: BigInt!
+  removeAmount: BigInt!
+}
+
+type OstiumTrading_Paused {
+  id: ID!
+  paused: Boolean!
+}
+
+type OstiumTrading_MarketOrdersTimeoutUpdated {
+  id: ID!
+  value: BigInt!
+}
+
+type OstiumTrading_MaxAllowedCollateralUpdated {
+  id: ID!
+  value: BigInt!
+}
+
+type OstiumTradingCallbacks_MarketOpenExecuted {
+  id: ID!
+  orderId: BigInt!
+  t_0: BigInt!
+  t_1: BigInt!
+  t_2: BigInt!
+  t_3: BigInt!
+  t_4: String!
+  t_5: BigInt!
+  t_6: BigInt!
+  t_7: BigInt!
+  t_8: Boolean!
+  priceImpactP: BigInt!
+  tradeNotional: BigInt!
+}
+
+type OstiumTradingCallbacks_MarketCloseExecuted {
+  id: ID!
+  orderId: BigInt!
+  tradeId: BigInt!
+  price: BigInt!
+  priceImpactP: BigInt!
+  percentProfit: BigInt!
+  usdcSentToTrader: BigInt!
+}
+
+type OstiumTradingCallbacks_MarketCloseExecutedV2 {
+  id: ID!
+  orderId: BigInt!
+  tradeId: BigInt!
+  price: BigInt!
+  priceImpactP: BigInt!
+  percentProfit: BigInt!
+  usdcSentToTrader: BigInt!
+  percentageClosed: BigInt!
+}
+
+type OstiumTradingCallbacks_LimitOpenExecuted {
+  id: ID!
+  orderId: BigInt!
+  limitIndex: BigInt!
+  t_0: BigInt!
+  t_1: BigInt!
+  t_2: BigInt!
+  t_3: BigInt!
+  t_4: String!
+  t_5: BigInt!
+  t_6: BigInt!
+  t_7: BigInt!
+  t_8: Boolean!
+  priceImpactP: BigInt!
+  tradeNotional: BigInt!
+}
+
+type OstiumTradingCallbacks_LimitCloseExecuted {
+  id: ID!
+  orderId: BigInt!
+  tradeId: BigInt!
+  index: BigInt!
+  price: BigInt!
+  priceImpactP: BigInt!
+  percentProfit: BigInt!
+  usdcSentToTrader: BigInt!
+}
+
+type OstiumTradingCallbacks_MarketOpenCanceled {
+  id: ID!
+  orderId: BigInt!
+  trader: String!
+  pairIndex: BigInt!
+  cancelReason: BigInt!
+}
+
+type OstiumTradingCallbacks_MarketCloseCanceled {
+  id: ID!
+  orderId: BigInt!
+  tradeId: BigInt!
+  trader: String!
+  pairIndex: BigInt!
+  index: BigInt!
+  cancelReason: BigInt!
+}
+
+type OstiumTradingCallbacks_AutomationCloseOrderCanceled {
+  id: ID!
+  orderId: BigInt!
+  tradeId: BigInt!
+  trader: String!
+  pairIndex: BigInt!
+  index: BigInt!
+  cancelReason: BigInt!
+}
+
+type OstiumTradingCallbacks_AutomationOpenOrderCanceled {
+  id: ID!
+  orderId: BigInt!
+  trader: String!
+  pairIndex: BigInt!
+  cancelReason: BigInt!
+}
+
+type OstiumTradingCallbacks_DevFeeCharged {
+  id: ID!
+  tradeId: BigInt!
+  trader: String!
+  amount: BigInt!
+}
+
+type OstiumTradingCallbacks_VaultOpeningFeeCharged {
+  id: ID!
+  tradeId: BigInt!
+  trader: String!
+  amount: BigInt!
+}
+
+type OstiumTradingCallbacks_VaultLiqFeeCharged {
+  id: ID!
+  orderId: BigInt!
+  tradeId: BigInt!
+  trader: String!
+  amount: BigInt!
+}
+
+type OstiumTradingCallbacks_OracleFeeCharged {
+  id: ID!
+  tradeId: BigInt!
+  trader: String!
+  amount: BigInt!
+}
+
+type OstiumTradingCallbacks_RemoveCollateralExecuted {
+  id: ID!
+  tradeId: BigInt!
+  orderId: BigInt!
+  trader: String!
+  pairIndex: BigInt!
+  removeAmount: BigInt!
+  leverage: BigInt!
+  tp: BigInt!
+  sl: BigInt!
+}
+
+type OstiumTradingCallbacks_RemoveCollateralRejected {
+  id: ID!
+  tradeId: BigInt!
+  orderId: BigInt!
+  trader: String!
+  pairIndex: BigInt!
+  removeAmount: BigInt!
+  reason: BigInt!
+}
+
+type OstiumTradingCallbacks_FeesCharged {
+  id: ID!
+  orderId: BigInt!
+  tradeId: BigInt!
+  trader: String!
+  rolloverFees: BigInt!
+  fundingFees: BigInt!
+}
+
+type OstiumTradingCallbacks_Paused {
+  id: ID!
+  paused: Boolean!
+}
+
+type OstiumVault_Deposit {
+  id: ID!
+  sender: String!
+  owner: String!
+  assets: BigInt!
+  shares: BigInt!
+}
+
+type OstiumVault_Withdraw {
+  id: ID!
+  sender: String!
+  receiver: String!
+  owner: String!
+  assets: BigInt!
+  shares: BigInt!
+}
+
+type OstiumVault_WithdrawRequested {
+  id: ID!
+  sender: String!
+  owner: String!
+  shares: BigInt!
+  currEpoch: BigInt!
+  unlockEpoch: BigInt!
+}
+
+type OstiumVault_WithdrawCanceled {
+  id: ID!
+  sender: String!
+  owner: String!
+  shares: BigInt!
+  currEpoch: BigInt!
+  unlockEpoch: BigInt!
+}
+
+type OstiumVault_DepositLocked {
+  id: ID!
+  sender: String!
+  owner: String!
+  depositId: BigInt!
+  d_0: String!
+  d_1: BigInt!
+  d_2: BigInt!
+  d_3: BigInt!
+  d_4: BigInt!
+  d_5: BigInt!
+}
+
+type OstiumVault_DepositUnlocked {
+  id: ID!
+  sender: String!
+  receiver: String!
+  owner: String!
+  depositId: BigInt!
+  d_0: String!
+  d_1: BigInt!
+  d_2: BigInt!
+  d_3: BigInt!
+  d_4: BigInt!
+  d_5: BigInt!
+}
+
+type OstiumVault_AccPnlPerTokenUsedUpdated {
+  id: ID!
+  sender: String!
+  prevPositiveOpenPnl: BigInt!
+  newPositiveOpenPnl: BigInt!
+  newEpochPositiveOpenPnl: BigInt!
+  newAccPnlPerTokenUsed: BigInt!
+}
+
+type OstiumVault_ShareToAssetsPriceUpdated {
+  id: ID!
+  value: BigInt!
+}
+
+type OstiumVault_RewardDistributed {
+  id: ID!
+  sender: String!
+  assets: BigInt!
+  accRewardsPerToken: BigInt!
+}
+
+type OstiumVault_MaxDiscountPUpdated {
+  id: ID!
+  value: BigInt!
+}
+
+type OstiumVault_MaxDiscountThresholdPUpdated {
+  id: ID!
+  value: BigInt!
+}
+
+type OstiumVault_CurrentMaxSupplyUpdated {
+  id: ID!
+  value: BigInt!
+}
+
+type OstiumVault_Transfer {
+  id: ID!
+  from: String!
+  to: String!
+  value: BigInt!
+}
+
+type OstiumVault_Approval {
+  id: ID!
+  owner: String!
+  spender: String!
+  value: BigInt!
+}
+
+type OstiumLockedDepositNft_Transfer {
+  id: ID!
+  from: String!
+  to: String!
+  tokenId: BigInt!
+}
+
+type OstiumTradingStorage_MaxOpenInterestUpdated {
+  id: ID!
+  pairIndex: BigInt!
+  value: BigInt!
+}
+
+type OstiumTradingStorage_MaxTradesPerPairUpdated {
+  id: ID!
+  value: BigInt!
+}
+
+type OstiumTradingStorage_MaxPendingMarketOrdersUpdated {
+  id: ID!
+  value: BigInt!
+}
+
+type OstiumOpenPnl_LastTradePriceUpdated {
+  id: ID!
+  pairIndex: BigInt!
+  lastTradePrice: BigInt!
+}

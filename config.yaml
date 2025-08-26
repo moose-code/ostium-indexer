@@ -1,0 +1,141 @@
+# yaml-language-server: $schema=./node_modules/envio/evm.schema.json
+name: envio-indexer
+networks:
+  - id: 42161
+    start_block: 0
+    contracts:
+      - name: OstiumPairsInfos
+        address:
+          - 0x3890243a8fc091c626ed26c087a028b46bc9d66c
+        handler: src/EventHandlers.ts
+        events:
+          - event: AccFundingFeesStored(uint16 indexed pairIndex, int256 valueLong, int256 valueShort, int64 lastFundingRate, int64 velocity)
+          - event: AccFundingFeesStoredV2(uint16 indexed pairIndex, int256 valueLong, int256 valueShort, int256 lastOiDelta, int64 lastFundingRate)
+          - event: AccRolloverFeesStored(uint16 indexed pairIndex, uint256 value)
+          - event: FeesCharged(uint256 indexed orderId, uint256 indexed tradeId, address indexed trader, uint256 rolloverFees, int256 fundingFees)
+          - event: FundingFeeSlopeUpdated(uint16 indexed pairIndex, uint256 value)
+          - event: HillParamsUpdated(uint16 indexed pairIndex, int256 hillInflectionPoint, uint256 hillPosScale, uint256 hillNegScale)
+          - event: Initialized(uint64 version)
+          - event: LastVelocityUpdated(uint16 indexed pairIndex, int64 value)
+          - event: LiqMarginThresholdPUpdated(uint256 value)
+          - event: LiqThresholdPUpdated(uint256 value)
+          - event: ManagerUpdated(address value)
+          - event: MaxFundingFeePerBlockUpdated(uint16 indexed pairIndex, uint256 value)
+          - event: MaxFundingFeeVelocityUpdated(uint16 indexed pairIndex, uint256 value)
+          - event: MaxNegativePnlOnOpenPUpdated(uint256 value)
+          - event: MaxRolloverFeePerBlockUpdated(uint16 indexed pairIndex, uint256 value)
+          - event: MaxRolloverFeeSlopeUpdated(uint16 indexed pairIndex, uint256 value)
+          - event: MaxRolloverVolatilityUpdated(uint16 indexed pairIndex, uint256 value)
+          - event: PairFundingFeesUpdated(uint16 indexed pairIndex, (int256,int256,int64,int64,uint64,uint64,uint32,uint16) value)
+          - event: PairFundingFeesUpdatedV2(uint16 indexed pairIndex, (int256,int256,int64,int64,uint64,uint64,uint32,uint16,uint16,uint16,uint16,int256) value)
+          - event: PairOpeningFeesUpdated(uint16 indexed pairIndex, (uint32,uint32,uint32,uint16,uint16,uint8) value)
+          - event: PairRolloverFeesUpdated(uint16 indexed pairIndex, (uint256,uint64,uint64,uint32,uint32,uint16) value)
+          - event: RolloverFeePerBlockUpdated(uint16 indexed pairIndex, uint256 value, uint256 volatility)
+          - event: TradeInitialAccFeesStored(uint256 indexed tradeId, address indexed trader, uint16 indexed pairIndex, uint8 index, uint256 rollover, int256 funding)
+          - event: VaultFeePercentUpdated(uint16 indexed pairIndex, uint8 value)
+      - name: OstiumPairsStorage
+        address:
+          - 0x260e349f643f12797fdc6f8c9d3df211d5577823
+        handler: src/EventHandlers.ts
+        events:
+          - event: PairAdded(uint16 index, bytes32 from, bytes32 to)
+          - event: PairUpdated(uint16 indexed index)
+          - event: GroupUpdated(uint8 indexed index)
+          - event: FeeUpdated(uint8 indexed index)
+          - event: PairMaxLeverageUpdated(uint16 indexed pairIndex, uint32 maxLeverage)
+          - event: PairOvernightMaxLeverageUpdated(uint16 indexed pairIndex, uint32 overnightMaxLeverage)
+      - name: OstiumTrading
+        address:
+          - 0x6d0ba1f9996dbd8885827e1b2e8f6593e7702411
+        handler: src/EventHandlers.ts
+        events:
+          - event: MarketOpenOrderInitiated(uint256 indexed orderId, address indexed trader, uint16 indexed pairIndex)
+          - event: MarketCloseOrderInitiated(uint256 indexed orderId, uint256 indexed tradeId, address indexed trader, uint16 pairIndex)
+          - event: MarketCloseOrderInitiatedV2(uint256 indexed orderId, uint256 indexed tradeId, address indexed trader, uint16 pairIndex, uint16 closePercentage)
+          - event: OpenLimitCanceled(address indexed trader, uint16 indexed pairIndex, uint8 index)
+          - event: OpenLimitPlaced(address indexed trader, uint16 indexed pairIndex, uint8 index)
+          - event: AutomationOpenOrderInitiated(uint256 indexed orderId, address indexed trader, uint16 indexed pairIndex, uint8 index)
+          - event: AutomationCloseOrderInitiated(uint256 indexed orderId, uint256 indexed tradeId, address indexed trader, uint16 pairIndex, uint8 index)
+          - event: OpenLimitUpdated(address indexed trader, uint16 indexed pairIndex, uint8 index, uint192 newPrice, uint192 newTp, uint192 newSl)
+          - event: SlUpdated(uint256 indexed tradeId, address indexed trader, uint16 indexed pairIndex, uint8 index, uint192 newSl)
+          - event: TpUpdated(uint256 indexed tradeId, address indexed trader, uint16 indexed pairIndex, uint8 index, uint192 newTp)
+          - event: >-
+              MarketOpenTimeoutExecuted(uint256 indexed orderId,(uint256,uint192,uint32,(uint256,uint192,uint192,uint192,address,uint32,uint16,uint8,bool)))
+          - event: >-
+              MarketOpenTimeoutExecutedV2(uint256 indexed orderId,(uint256,uint192,uint32,(uint256,uint192,uint192,uint192,address,uint32,uint16,uint8,bool),uint16))
+          - event: >-
+              MarketCloseTimeoutExecuted(uint256 indexed orderId, uint256 indexed tradeId,(uint256,uint192,uint32,(uint256,uint192,uint192,uint192,address,uint32,uint16,uint8,bool)))
+          - event: >-
+              MarketCloseTimeoutExecutedV2(uint256 indexed orderId, uint256 indexed tradeId,(uint256,uint192,uint32,(uint256,uint192,uint192,uint192,address,uint32,uint16,uint8,bool),uint16))
+          - event: TopUpCollateralExecuted(uint256 indexed tradeId, address indexed trader, uint16 indexed pairIndex, uint256 topUpAmount, uint32 newLeverage)
+          - event: RemoveCollateralInitiated(uint256 indexed tradeId, uint256 indexed orderId, address indexed trader, uint16 pairIndex, uint256 removeAmount)
+          - event: Paused(bool paused)
+          - event: MarketOrdersTimeoutUpdated(uint16 value)
+          - event: MaxAllowedCollateralUpdated(uint256 value)
+      - name: OstiumTradingCallbacks
+        address:
+          - 0x7720fc8c8680bf4a1af99d44c6c265a74e9742a9
+        handler: src/EventHandlers.ts
+        events:
+          - event: >-
+              MarketOpenExecuted(uint256 indexed orderId,(uint256,uint192,uint192,uint192,address,uint32,uint16,uint8,bool),uint256 priceImpactP,uint256 tradeNotional)
+          - event: MarketCloseExecuted(uint256 indexed orderId, uint256 indexed tradeId, uint256 price, uint256 priceImpactP, int256 percentProfit, uint256 usdcSentToTrader)
+          - event: MarketCloseExecutedV2(uint256 indexed orderId, uint256 indexed tradeId, uint256 price, uint256 priceImpactP, int256 percentProfit, uint256 usdcSentToTrader, uint256 percentageClosed)
+          - event: >-
+              LimitOpenExecuted(uint256 indexed orderId, uint256 limitIndex,(uint256,uint192,uint192,uint192,address,uint32,uint16,uint8,bool),uint256 priceImpactP,uint256 tradeNotional)
+          - event: LimitCloseExecuted(uint256 indexed orderId, uint256 indexed tradeId, uint8 index, uint256 price, uint256 priceImpactP, int256 percentProfit, uint256 usdcSentToTrader)
+          - event: MarketOpenCanceled(uint256 indexed orderId, address indexed trader, uint256 indexed pairIndex, uint8 cancelReason)
+          - event: MarketCloseCanceled(uint256 indexed orderId, uint256 indexed tradeId, address indexed trader, uint256 pairIndex, uint256 index, uint8 cancelReason)
+          - event: AutomationCloseOrderCanceled(uint256 indexed orderId, uint256 indexed tradeId, address indexed trader, uint256 pairIndex, uint8 index, uint8 cancelReason)
+          - event: AutomationOpenOrderCanceled(uint256 indexed orderId, address indexed trader, uint256 indexed pairIndex, uint8 cancelReason)
+          - event: DevFeeCharged(uint256 indexed tradeId, address indexed trader, uint256 amount)
+          - event: VaultOpeningFeeCharged(uint256 indexed tradeId, address indexed trader, uint256 amount)
+          - event: VaultLiqFeeCharged(uint256 indexed orderId, uint256 indexed tradeId, address indexed trader, uint256 amount)
+          - event: OracleFeeCharged(uint256 indexed tradeId, address indexed trader, uint256 amount)
+          - event: RemoveCollateralExecuted(uint256 indexed tradeId, uint256 indexed orderId, address indexed trader, uint16 pairIndex, uint256 removeAmount, uint32 leverage, uint192 tp, uint192 sl)
+          - event: RemoveCollateralRejected(uint256 indexed tradeId, uint256 indexed orderId, address indexed trader, uint16 pairIndex, uint256 removeAmount, uint8 reason)
+          - event: FeesCharged(uint256 indexed orderId, uint256 indexed tradeId, address indexed trader, uint256 rolloverFees, int256 fundingFees)
+          - event: Paused(bool paused)
+      - name: OstiumVault
+        address:
+          - 0x20d419a8e12c45f88fda7c5760bb6923cee27f98
+        handler: src/EventHandlers.ts
+        events:
+          - event: Deposit(address indexed sender, address indexed owner, uint256 assets, uint256 shares)
+          - event: Withdraw(address indexed sender, address indexed receiver, address indexed owner, uint256 assets, uint256 shares)
+          - event: WithdrawRequested(address indexed sender, address indexed owner, uint256 shares, uint16 currEpoch, uint16 indexed unlockEpoch)
+          - event: WithdrawCanceled(address indexed sender, address indexed owner, uint256 shares, uint16 currEpoch, uint16 indexed unlockEpoch)
+          - event: >-
+              DepositLocked(address indexed sender, address indexed owner, uint256 depositId,(address,uint256,uint256,uint256,uint32,uint32))
+          - event: >-
+              DepositUnlocked(address indexed sender, address indexed receiver, address indexed owner, uint256 depositId,(address,uint256,uint256,uint256,uint32,uint32))
+          - event: AccPnlPerTokenUsedUpdated(address indexed sender, uint256 indexed newEpoch, uint256 prevPositiveOpenPnl, uint256 newPositiveOpenPnl, uint256 newEpochPositiveOpenPnl, int256 newAccPnlPerTokenUsed)
+          - event: ShareToAssetsPriceUpdated(uint256 value)
+          - event: RewardDistributed(address indexed sender, uint256 assets, uint256 accRewardsPerToken)
+          - event: MaxDiscountPUpdated(uint256 value)
+          - event: MaxDiscountThresholdPUpdated(uint256 value)
+          - event: CurrentMaxSupplyUpdated(uint256 value)
+          - event: Transfer(address indexed from, address indexed to, uint256 value)
+          - event: Approval(address indexed owner, address indexed spender, uint256 value)
+      - name: OstiumLockedDepositNft
+        address:
+          - 0xb4f1123be58f5d69e1cf565ed8756c7fcf31c8d3
+        handler: src/EventHandlers.ts
+        events:
+          - event: Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
+      - name: OstiumTradingStorage
+        address:
+          - 0xccd5891083a8acd2074690f65d3024e7d13d66e7
+        handler: src/EventHandlers.ts
+        events:
+          - event: MaxOpenInterestUpdated(uint16 indexed pairIndex, uint256 value)
+          - event: MaxTradesPerPairUpdated(uint256 value)
+          - event: MaxPendingMarketOrdersUpdated(uint256 value)
+      - name: OstiumOpenPnl
+        address:
+          - 0xe607ac9ff58697c5978afa1fc1c5c437a6d1858c
+        handler: src/EventHandlers.ts
+        events:
+          - event: LastTradePriceUpdated(uint16 indexed pairIndex, int256 lastTradePrice)
+unordered_multichain_mode: true
+preload_handlers: true

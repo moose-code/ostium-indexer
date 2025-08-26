@@ -1,0 +1,450 @@
+specVersion: 0.0.5
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: OstiumPairsStorage
+    network: arbitrum-one
+    source:
+      address: "0x260E349F643f12797fDc6f8c9d3df211D5577823"
+      abi: OstiumPairsStorage
+      startBlock: 246959279
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Pair
+      abis:
+        - name: OstiumPairsStorage
+          file: ./abis/OstiumPairsStorage.json
+      eventHandlers:
+        - event: >-
+            PairAdded(uint16,bytes32,bytes32)
+          handler: handlePairAdded
+        - event: >-
+            PairUpdated(indexed uint16)
+          handler: handlePairUpdated
+        - event: >-
+            GroupUpdated(indexed uint8)
+          handler: handleGroupUpdated
+        - event: >-
+            FeeUpdated(indexed uint8)
+          handler: handleFeeUpdated
+        - event: >-
+            PairMaxLeverageUpdated(indexed uint16,uint32)
+          handler: handlePairMaxLeverageUpdated
+        - event: >-
+            PairOvernightMaxLeverageUpdated(indexed uint16,uint32)
+          handler: handlePairOvernightMaxLeverageUpdated
+      file: ./src/pair-storage.ts
+  - kind: ethereum
+    name: OstiumTrading
+    network: arbitrum-one
+    source:
+      address: "0x6D0bA1f9996DBD8885827e1b2e8f6593e7702411"
+      abi: OstiumTrading
+      startBlock: 246959438
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Order
+        - Trade
+        - Pair
+        - Fee
+        - Group
+        - Limit
+      abis:
+        - name: OstiumTrading
+          file: ./abis/OstiumTrading.json
+        - name: OstiumTradingStorage
+          file: ./abis/OstiumTradingStorage.json
+        - name: OstiumPairsStorage
+          file: ./abis/OstiumPairsStorage.json
+      eventHandlers:
+        - event: >-
+            MarketOpenOrderInitiated(indexed uint256,indexed address,indexed
+            uint16)
+          handler: handleOpenOrderInitiated
+        - event: >-
+            MarketCloseOrderInitiated(indexed uint256,indexed uint256,indexed
+            address,uint16)
+          handler: handleCloseOrderInitiated
+        - event: >-
+            MarketCloseOrderInitiatedV2(indexed uint256,indexed uint256,indexed
+            address,uint16,uint16)
+          handler: handleCloseOrderInitiatedV2
+        - event: >-
+            OpenLimitCanceled(indexed address,indexed uint16,uint8)
+          handler: handleOpenLimitCancelled
+        - event: >-
+            OpenLimitPlaced(indexed address,indexed uint16,uint8)
+          handler: handleOpenLimitPlaced
+        - event: >-
+            AutomationOpenOrderInitiated(indexed uint256,indexed address,indexed uint16,uint8)
+          handler: handleAutomationOpenOrderInitiated
+        - event: >-
+            AutomationCloseOrderInitiated(indexed uint256,indexed
+            uint256,indexed address,uint16,uint8)
+          handler: handleAutomationCloseOrderInitiated
+        - event: >-
+            OpenLimitUpdated(indexed address,indexed
+            uint16,uint8,uint192,uint192,uint192)
+          handler: handleOpenLimitUpdated
+        - event: >-
+            SlUpdated(indexed uint256,indexed address,indexed
+            uint16,uint8,uint192)
+          handler: handleSlUpdated
+        - event: >-
+            TpUpdated(indexed uint256,indexed address,indexed
+            uint16,uint8,uint192)
+          handler: handleTpUpdated
+        - event: >-
+            MarketOpenTimeoutExecuted(indexed uint256,(uint256,uint192,uint32,(uint256,uint192,uint192,uint192,address,uint32,uint16,uint8,bool)))
+          handler: handleMarketOpenTimeoutExecuted
+        - event: >-
+            MarketOpenTimeoutExecutedV2(indexed uint256,(uint256,uint192,uint32,(uint256,uint192,uint192,uint192,address,uint32,uint16,uint8,bool),uint16))
+          handler: handleMarketOpenTimeoutExecutedV2
+        - event: >-
+            MarketCloseTimeoutExecuted(indexed uint256,indexed uint256,(uint256,uint192,uint32,(uint256,uint192,uint192,uint192,address,uint32,uint16,uint8,bool)))
+          handler: handleMarketCloseTimeoutExecuted
+        - event: >-
+            MarketCloseTimeoutExecutedV2(indexed uint256,indexed uint256,(uint256,uint192,uint32,(uint256,uint192,uint192,uint192,address,uint32,uint16,uint8,bool),uint16))
+          handler: handleMarketCloseTimeoutExecutedV2
+        - event: >-
+            TopUpCollateralExecuted(indexed uint256,indexed address,indexed
+            uint16,uint256,uint32)
+          handler: handleTopUpCollateralExecuted
+        - event: >-
+            RemoveCollateralInitiated(indexed uint256,indexed uint256,indexed address,uint16,uint256)
+          handler: handleRemoveCollateralInitiated
+        - event: >-
+            Paused(bool)
+          handler: handlePaused
+        - event: >-
+            MarketOrdersTimeoutUpdated(uint16)
+          handler: handleMarketOrdersTimeoutUpdated
+        - event: >-
+            MaxAllowedCollateralUpdated(uint256)
+          handler: handleMaxAllowedCollateralUpdated
+      file: ./src/trading.ts
+  - kind: ethereum
+    name: OstiumPairInfos
+    network: arbitrum-one
+    source:
+      address: "0x3890243a8fc091c626ed26c087a028b46bc9d66c"
+      abi: OstiumPairInfos
+      startBlock: 246958170
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Order
+        - Trade
+        - Pair
+        - Fee
+        - Group
+      abis:
+        - name: OstiumPairInfos
+          file: ./abis/OstiumPairInfos.json
+        - name: OstiumTradingCallbacks
+          file: ./abis/OstiumTradingCallbacks.json
+        - name: OstiumTrading
+          file: ./abis/OstiumTrading.json
+        - name: OstiumTradingStorage
+          file: ./abis/OstiumTradingStorage.json
+        - name: OstiumPairsStorage
+          file: ./abis/OstiumPairsStorage.json
+      eventHandlers:
+        - event: >-
+            TradeInitialAccFeesStored(indexed uint256,indexed address,indexed
+            uint16,uint8,uint256,int256)
+          handler: handleTradeFeeStored
+        - event: >-
+            AccFundingFeesStored(indexed uint16,int256,int256,int64,int64)
+          handler: handleFundingStored
+        - event: >-
+            AccFundingFeesStoredV2(indexed uint16,int256,int256,int256,int64)
+          handler: handleFundingStoredV2
+        - event: >-
+            AccRolloverFeesStored(indexed uint16,uint256)
+          handler: handleRolloverStored
+        - event: >-
+            PairOpeningFeesUpdated(indexed uint16,(uint32,uint32,uint32,uint16,uint16,uint8))
+          handler: handleOpeningFeesUpdated
+        - event: >-
+            PairFundingFeesUpdated(indexed uint16,(int256,int256,int64,int64,uint64,uint64,uint32,uint16))
+          handler: handleFundingFeesUpdated
+        - event: >-
+            PairFundingFeesUpdatedV2(indexed
+            uint16,(int256,int256,int64,int64,uint64,uint64,uint32,uint16,uint16,uint16,uint16,int256))
+          handler: handleFundingFeesUpdatedV2
+        - event: >-
+            PairRolloverFeesUpdated(indexed
+            uint16,(uint256,uint64,uint64,uint32,uint32,uint16))
+          handler: handleRolloverFeesUpdated
+        - event: >-
+            RolloverFeePerBlockUpdated(indexed uint16,uint256,uint256)
+          handler: handleRolloverFeePerBlockUpdated
+        - event: >-
+            FeesCharged(indexed uint256,indexed uint256,indexed address,uint256,int256)
+          handler: handleFeesCharged
+        - event: >-
+            HillParamsUpdated(indexed uint16,int256,uint256,uint256)
+          handler: handleHillParamsUpdated
+        - event: >-
+            LiqThresholdPUpdated(uint256)
+          handler: handleLiqThresholdPUpdated
+        - event: >-
+            MaxNegativePnlOnOpenPUpdated(uint256)
+          handler: handleMaxNegativePnlOnOpenPUpdated
+        - event: >-
+            VaultFeePercentUpdated(indexed uint16,uint8)
+          handler: handleVaultFeePercentUpdated
+        - event: >-
+            MaxRolloverFeePerBlockUpdated(indexed uint16,uint256)
+          handler: handleMaxRolloverFeePerBlockUpdated
+        - event: >-
+            MaxRolloverVolatilityUpdated(indexed uint16,uint256)
+          handler: handleMaxRolloverVolatilityUpdated
+        - event: >-
+            MaxRolloverFeeSlopeUpdated(indexed uint16,uint256)
+          handler: handleMaxRolloverFeeSlopeUpdated
+        - event: >-
+            MaxFundingFeePerBlockUpdated(indexed uint16,uint256)
+          handler: handleMaxFundingFeePerBlockUpdated
+        - event: >-
+            LiqMarginThresholdPUpdated(uint256)
+          handler: handleLiqMarginThresholdPUpdated
+      file: ./src/pair-info.ts
+  - kind: ethereum
+    name: OstiumTradingCallbacks
+    network: arbitrum-one
+    source:
+      address: "0x7720fC8c8680bF4a1Af99d44c6c265a74e9742a9"
+      abi: OstiumTradingCallbacks
+      startBlock: 246959473
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Order
+        - Trade
+        - Pair
+        - Fee
+        - Group
+      abis:
+        - name: OstiumTradingCallbacks
+          file: ./abis/OstiumTradingCallbacks.json
+        - name: OstiumTrading
+          file: ./abis/OstiumTrading.json
+        - name: OstiumTradingStorage
+          file: ./abis/OstiumTradingStorage.json
+        - name: OstiumPairsStorage
+          file: ./abis/OstiumPairsStorage.json
+      eventHandlers:
+        - event: >-
+            MarketOpenExecuted(indexed
+            uint256,(uint256,uint192,uint192,uint192,address,uint32,uint16,uint8,bool),uint256,uint256)
+          handler: handleOpenMarketExecuted
+        - event: >-
+            MarketCloseExecuted(indexed uint256,indexed uint256,uint256,uint256,int256,uint256)
+          handler: handleCloseMarketExecuted
+        - event: >-
+            MarketCloseExecutedV2(indexed uint256,indexed uint256,uint256,uint256,int256,uint256,uint256)
+          handler: handleCloseMarketExecutedV2
+        - event: >-
+            LimitOpenExecuted(indexed
+            uint256,uint256,(uint256,uint192,uint192,uint192,address,uint32,uint16,uint8,bool),uint256,uint256)
+          handler: handleLimitOpenExecuted
+        - event: >-
+            LimitCloseExecuted(indexed uint256,indexed
+            uint256,uint8,uint256,uint256,int256,uint256)
+          handler: handleLimitCloseExecuted
+        - event: >-
+            MarketOpenCanceled(indexed uint256,indexed address,indexed
+            uint256,uint8)
+          handler: handleMarketOpenCanceled
+        - event: >-
+            MarketCloseCanceled(indexed uint256,indexed uint256,indexed
+            address,uint256,uint256,uint8)
+          handler: handleMarketCloseCanceled
+        - event: >-
+            AutomationCloseOrderCanceled(indexed uint256,indexed uint256,indexed
+            address,uint256,uint8,uint8)
+          handler: handleAutomationCloseOrderCanceled
+        - event: >-
+            AutomationOpenOrderCanceled(indexed uint256,indexed address,indexed
+            uint256,uint8)
+          handler: handleAutomationOpenOrderCanceled
+        - event: >-
+            DevFeeCharged(indexed uint256,indexed address,uint256)
+          handler: handleDevFeeCharged
+        - event: >-
+            VaultOpeningFeeCharged(indexed uint256,indexed address,uint256)
+          handler: handleVaultOpeningCharged
+        - event: >-
+            VaultLiqFeeCharged(indexed uint256,indexed uint256,indexed address,uint256)
+          handler: handleLiquidationCharged
+        - event: >-
+            OracleFeeCharged(indexed uint256,indexed address,uint256)
+          handler: handleOracleFeeCharged
+        - event: >-
+            RemoveCollateralExecuted(indexed uint256,indexed uint256,indexed address,uint16,uint256,uint32,uint192,uint192)
+          handler: handleRemoveCollateralExecuted
+        - event: >-
+            RemoveCollateralRejected(indexed uint256,indexed uint256,indexed address,uint16,uint256,uint8)
+          handler: handleRemoveCollateralRejected
+        - event: >-
+            FeesCharged(indexed uint256,indexed uint256,indexed address,uint256,int256)
+          handler: handleFeesCharged
+        - event: >-
+            Paused(bool)
+          handler: handlePaused
+      file: ./src/trading-callback.ts
+  - kind: ethereum
+    name: OstiumVault
+    network: arbitrum-one
+    source:
+      address: "0x20D419a8e12C45f88fDA7c5760bb6923Cee27F98"
+      abi: OstiumVault
+      startBlock: 228313424
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - LpShare
+        - LpNFT
+        - Vault
+      abis:
+        - name: OstiumVault
+          file: ./abis/OstiumVault.json
+      eventHandlers:
+        - event: >-
+            Deposit(indexed address,indexed address,uint256,uint256)
+          handler: handleDeposit
+        - event: >-
+            Withdraw(indexed address,indexed address,indexed
+            address,uint256,uint256)
+          handler: handleWithdraw
+        - event: >-
+            WithdrawRequested(indexed address,indexed
+            address,uint256,uint16,indexed uint16)
+          handler: handleWithdrawRequested
+        - event: >-
+            WithdrawCanceled(indexed address,indexed
+            address,uint256,uint16,indexed uint16)
+          handler: handleWithdrawCanceled
+        - event: >-
+            DepositLocked(indexed address,indexed
+            address,uint256,(address,uint256,uint256,uint256,uint32,uint32))
+          handler: handleDepositLocked
+        - event: >-
+            DepositUnlocked(indexed address,indexed address,indexed
+            address,uint256,(address,uint256,uint256,uint256,uint32,uint32))
+          handler: handleDepositUnlocked
+        - event: >-
+            AccPnlPerTokenUsedUpdated(indexed address,indexed
+            uint256,uint256,uint256,uint256,int256)
+          handler: handleAccPnlPerTokenUsedUpdated
+        - event: >-
+            ShareToAssetsPriceUpdated(uint256)
+          handler: handleShareToAssetsPriceUpdated
+        - event: >-
+            RewardDistributed(indexed address,uint256,uint256)
+          handler: handleRewardDistributed
+        - event: >-
+            MaxDiscountPUpdated(uint256)
+          handler: handleMaxDiscountPUpdated
+        - event: >-
+            MaxDiscountThresholdPUpdated(uint256)
+          handler: handleMaxDiscountThresholdPUpdated
+        - event: >-
+            CurrentMaxSupplyUpdated(uint256)
+          handler: handleCurrentMaxSupplyUpdated
+        - event: >-
+            Transfer(indexed address,indexed address,uint256)
+          handler: handleVaultTransfer
+        - event: >-
+            Approval(indexed address,indexed address,uint256)
+          handler: handleVaultApproval
+      file: ./src/vault.ts
+  - kind: ethereum
+    name: OstiumLockedDepositNft
+    network: arbitrum-one
+    source:
+      address: "0xb4f1123BE58f5d69E1cf565ED8756C7fcf31c8D3"
+      abi: OstiumLockedDepositNft
+      startBlock: 228313432
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - LpShare
+        - LpNFT
+        - Vault
+      abis:
+        - name: OstiumLockedDepositNft
+          file: ./abis/OstiumLockedDepositNft.json
+      eventHandlers:
+        - event: >-
+            Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleNFTTransfer
+      file: ./src/vault.ts
+  - kind: ethereum
+    name: OstiumTradingStorage
+    network: arbitrum-one
+    source:
+      address: "0xccd5891083a8acd2074690f65d3024e7d13d66e7"
+      abi: OstiumTradingStorage
+      startBlock: 246956362
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Pair
+        - MetaData
+      abis:
+        - name: OstiumTradingStorage
+          file: ./abis/OstiumTradingStorage.json
+        - name: OstiumPairsStorage
+          file: ./abis/OstiumPairsStorage.json
+      eventHandlers:
+        - event: >-
+            MaxOpenInterestUpdated(indexed uint16,uint256)
+          handler: handleMaxOpenInterestUpdated
+        - event: >-
+            MaxTradesPerPairUpdated(uint256)
+          handler: handleMaxTradesPerPairUpdated
+        - event: >-
+            MaxPendingMarketOrdersUpdated(uint256)
+          handler: handleMaxPendingMarketOrdersUpdated
+      file: ./src/pair-info.ts
+  - kind: ethereum
+    name: OstiumOpenPnl
+    network: arbitrum-one
+    source:
+      address: "0xE607aC9FF58697c5978AfA1Fc1C5C437a6D1858c"
+      abi: OstiumOpenPnl
+      startBlock: 246959508
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Pair
+      abis:
+        - name: OstiumOpenPnl
+          file: ./abis/OstiumOpenPnl.json
+      eventHandlers:
+        - event: >-
+            LastTradePriceUpdated(indexed uint16,int256)
+          handler: handleLastTradePriceUpdated
+      file: ./src/pair-info.ts
