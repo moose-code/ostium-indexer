@@ -176,34 +176,49 @@ OstiumPairsInfos.FeesCharged.handler(async ({ event, context }) => {
   };
 
   context.OstiumPairsInfos_FeesCharged.set(entity);
-  
+
   // Accumulate fees into Trade entity
   const tradeId = event.params.tradeId.toString();
   const trade = await context.Trade.get(tradeId);
   if (trade) {
     const updatedTrade: TradeEntity = {
       ...trade,
-      rollover: add(trade.rollover as unknown as bigint | undefined, event.params.rolloverFees),
-      funding: add(trade.funding as unknown as bigint | undefined, event.params.fundingFees),
+      rollover: add(
+        trade.rollover as unknown as bigint | undefined,
+        event.params.rolloverFees
+      ),
+      funding: add(
+        trade.funding as unknown as bigint | undefined,
+        event.params.fundingFees
+      ),
     } as unknown as TradeEntity;
     context.Trade.set(updatedTrade);
   }
-  
+
   // Update user fee counters
   const userId = event.params.trader.toLowerCase();
   const user = await context.User.get(userId);
   const userUpdated: UserEntity = {
     id: userId,
-    totalRolloverFee: add(user?.totalRolloverFee as unknown as bigint | undefined, event.params.rolloverFees),
-    netFundingPayment: add(user?.netFundingPayment as unknown as bigint | undefined, event.params.fundingFees),
+    totalRolloverFee: add(
+      user?.totalRolloverFee as unknown as bigint | undefined,
+      event.params.rolloverFees
+    ),
+    netFundingPayment: add(
+      user?.netFundingPayment as unknown as bigint | undefined,
+      event.params.fundingFees
+    ),
   } as unknown as UserEntity;
   context.User.set(user ? { ...user, ...userUpdated } : userUpdated);
-  
+
   // Update MetaData global counters
   const meta = await getMeta(context);
   const metaUpdated: MetaDataEntity = {
     ...meta,
-    totalRolloverFee: add(meta.totalRolloverFee as unknown as bigint | undefined, event.params.rolloverFees),
+    totalRolloverFee: add(
+      meta.totalRolloverFee as unknown as bigint | undefined,
+      event.params.rolloverFees
+    ),
   } as unknown as MetaDataEntity;
   context.MetaData.set(metaUpdated);
 });
@@ -1004,7 +1019,7 @@ OstiumTradingCallbacks.MarketOpenExecuted.handler(
       tradeNotional: event.params.tradeNotional,
     };
     context.OstiumTradingCallbacks_MarketOpenExecuted.set(entity);
-    
+
     // Create comprehensive Order entity
     const orderOpen: OrderEntity = {
       id: `${event.chainId}_${event.block.number}_${event.logIndex}`,
@@ -1027,7 +1042,7 @@ OstiumTradingCallbacks.MarketOpenExecuted.handler(
       isCancelled: false,
     } as unknown as OrderEntity;
     context.Order.set(orderOpen);
-    
+
     // Update or create Trade entity with complete information
     const tradeId = t[0]?.toString();
     if (tradeId) {
@@ -1055,19 +1070,31 @@ OstiumTradingCallbacks.MarketOpenExecuted.handler(
         timestamp: BigInt(event.block.timestamp),
       } as unknown as TradeEntity;
       context.Trade.set(updatedTrade);
-      
+
       // Update user statistics
       const userId = t[4].toLowerCase();
       const user = await context.User.get(userId);
       const userUpdated: UserEntity = {
         id: userId,
-        totalOpenTrades: add(user?.totalOpenTrades as unknown as bigint | undefined, 1n),
-        totalTrades: add(user?.totalTrades as unknown as bigint | undefined, 1n),
-        totalVolume: add(user?.totalVolume as unknown as bigint | undefined, event.params.tradeNotional),
-        totalOpenVolume: add(user?.totalOpenVolume as unknown as bigint | undefined, event.params.tradeNotional),
+        totalOpenTrades: add(
+          user?.totalOpenTrades as unknown as bigint | undefined,
+          1n
+        ),
+        totalTrades: add(
+          user?.totalTrades as unknown as bigint | undefined,
+          1n
+        ),
+        totalVolume: add(
+          user?.totalVolume as unknown as bigint | undefined,
+          event.params.tradeNotional
+        ),
+        totalOpenVolume: add(
+          user?.totalOpenVolume as unknown as bigint | undefined,
+          event.params.tradeNotional
+        ),
       } as unknown as UserEntity;
       context.User.set(user ? { ...user, ...userUpdated } : userUpdated);
-      
+
       // Update UserPairStat
       const pairId = t[1]?.toString();
       if (pairId) {
@@ -1077,34 +1104,64 @@ OstiumTradingCallbacks.MarketOpenExecuted.handler(
           id: upsId,
           user_id: userId,
           pair_id: pairId,
-          totalOpenTrades: add(ups?.totalOpenTrades as unknown as bigint | undefined, 1n),
-          totalTrades: add(ups?.totalTrades as unknown as bigint | undefined, 1n),
-          totalMarketOrders: add(ups?.totalMarketOrders as unknown as bigint | undefined, 1n),
-          totalVolume: add(ups?.totalVolume as unknown as bigint | undefined, event.params.tradeNotional),
-          totalOpenVolume: add(ups?.totalOpenVolume as unknown as bigint | undefined, event.params.tradeNotional),
+          totalOpenTrades: add(
+            ups?.totalOpenTrades as unknown as bigint | undefined,
+            1n
+          ),
+          totalTrades: add(
+            ups?.totalTrades as unknown as bigint | undefined,
+            1n
+          ),
+          totalMarketOrders: add(
+            ups?.totalMarketOrders as unknown as bigint | undefined,
+            1n
+          ),
+          totalVolume: add(
+            ups?.totalVolume as unknown as bigint | undefined,
+            event.params.tradeNotional
+          ),
+          totalOpenVolume: add(
+            ups?.totalOpenVolume as unknown as bigint | undefined,
+            event.params.tradeNotional
+          ),
         } as unknown as UserPairStatEntity;
         context.UserPairStat.set(ups ? { ...ups, ...upsUpdated } : upsUpdated);
       }
-      
+
       // Update pair statistics
       if (pairId) {
         const pair = await context.Pair.get(pairId);
         const pairUpdated: PairEntity = {
           id: pairId,
-          totalOpenTrades: add(pair?.totalOpenTrades as unknown as bigint | undefined, 1n),
-          volume: add(pair?.volume as unknown as bigint | undefined, event.params.tradeNotional),
+          totalOpenTrades: add(
+            pair?.totalOpenTrades as unknown as bigint | undefined,
+            1n
+          ),
+          volume: add(
+            pair?.volume as unknown as bigint | undefined,
+            event.params.tradeNotional
+          ),
         } as unknown as PairEntity;
         context.Pair.set(pair ? { ...pair, ...pairUpdated } : pairUpdated);
       }
-      
+
       // Update MetaData
       const meta = await getMeta(context);
       const metaUpdated: MetaDataEntity = {
         ...meta,
-        totalOpenTrades: add(meta.totalOpenTrades as unknown as bigint | undefined, 1n),
+        totalOpenTrades: add(
+          meta.totalOpenTrades as unknown as bigint | undefined,
+          1n
+        ),
         totalTrades: add(meta.totalTrades as unknown as bigint | undefined, 1n),
-        totalVolume: add(meta.totalVolume as unknown as bigint | undefined, event.params.tradeNotional),
-        totalOpenVolume: add(meta.totalOpenVolume as unknown as bigint | undefined, event.params.tradeNotional),
+        totalVolume: add(
+          meta.totalVolume as unknown as bigint | undefined,
+          event.params.tradeNotional
+        ),
+        totalOpenVolume: add(
+          meta.totalOpenVolume as unknown as bigint | undefined,
+          event.params.tradeNotional
+        ),
       } as unknown as MetaDataEntity;
       context.MetaData.set(metaUpdated);
     }
@@ -1123,7 +1180,7 @@ OstiumTradingCallbacks.MarketCloseExecuted.handler(
       usdcSentToTrader: event.params.usdcSentToTrader,
     };
     context.OstiumTradingCallbacks_MarketCloseExecuted.set(entity);
-    
+
     const orderClose: OrderEntity = {
       id: `${event.chainId}_${event.block.number}_${event.logIndex}`,
       orderType: "market_close_exec",
@@ -1142,7 +1199,7 @@ OstiumTradingCallbacks.MarketCloseExecuted.handler(
       closePercent: 100n, // Full close
     } as unknown as OrderEntity;
     context.Order.set(orderClose);
-    
+
     const tId = event.params.tradeId.toString();
     const tr = await context.Trade.get(tId);
     if (tr) {
@@ -1152,7 +1209,7 @@ OstiumTradingCallbacks.MarketCloseExecuted.handler(
         closePrice: event.params.price,
       } as unknown as TradeEntity;
       context.Trade.set(closed);
-      
+
       // Update user statistics
       const userId = tr.trader?.toLowerCase();
       if (userId) {
@@ -1160,16 +1217,37 @@ OstiumTradingCallbacks.MarketCloseExecuted.handler(
         const isProfit = event.params.percentProfit > 0n;
         const userUpdated: UserEntity = {
           id: userId,
-          totalOpenTrades: add(user?.totalOpenTrades as unknown as bigint | undefined, -1n),
-          totalClosedVolume: add(user?.totalClosedVolume as unknown as bigint | undefined, tr.tradeNotional as unknown as bigint),
-          totalOpenVolume: add(user?.totalOpenVolume as unknown as bigint | undefined, -(tr.tradeNotional as unknown as bigint)),
-          totalClosedCollateral: add(user?.totalClosedCollateral as unknown as bigint | undefined, tr.collateral as unknown as bigint),
-          totalProfitTrades: add(user?.totalProfitTrades as unknown as bigint | undefined, isProfit ? 1n : 0n),
-          totalLossTrades: add(user?.totalLossTrades as unknown as bigint | undefined, isProfit ? 0n : 1n),
-          totalPnL: add(user?.totalPnL as unknown as bigint | undefined, event.params.percentProfit),
+          totalOpenTrades: add(
+            user?.totalOpenTrades as unknown as bigint | undefined,
+            -1n
+          ),
+          totalClosedVolume: add(
+            user?.totalClosedVolume as unknown as bigint | undefined,
+            tr.tradeNotional as unknown as bigint
+          ),
+          totalOpenVolume: add(
+            user?.totalOpenVolume as unknown as bigint | undefined,
+            -(tr.tradeNotional as unknown as bigint)
+          ),
+          totalClosedCollateral: add(
+            user?.totalClosedCollateral as unknown as bigint | undefined,
+            tr.collateral as unknown as bigint
+          ),
+          totalProfitTrades: add(
+            user?.totalProfitTrades as unknown as bigint | undefined,
+            isProfit ? 1n : 0n
+          ),
+          totalLossTrades: add(
+            user?.totalLossTrades as unknown as bigint | undefined,
+            isProfit ? 0n : 1n
+          ),
+          totalPnL: add(
+            user?.totalPnL as unknown as bigint | undefined,
+            event.params.percentProfit
+          ),
         } as unknown as UserEntity;
         context.User.set(user ? { ...user, ...userUpdated } : userUpdated);
-        
+
         // Update UserPairStat
         const pairId = tr.pair_id;
         if (pairId) {
@@ -1179,40 +1257,84 @@ OstiumTradingCallbacks.MarketCloseExecuted.handler(
             id: upsId,
             user_id: userId,
             pair_id: pairId,
-            totalOpenTrades: add(ups?.totalOpenTrades as unknown as bigint | undefined, -1n),
-            totalClosedVolume: add(ups?.totalClosedVolume as unknown as bigint | undefined, tr.tradeNotional as unknown as bigint),
-            totalOpenVolume: add(ups?.totalOpenVolume as unknown as bigint | undefined, -(tr.tradeNotional as unknown as bigint)),
-            totalClosedCollateral: add(ups?.totalClosedCollateral as unknown as bigint | undefined, tr.collateral as unknown as bigint),
-            totalProfitTrades: add(ups?.totalProfitTrades as unknown as bigint | undefined, isProfit ? 1n : 0n),
-            totalLossTrades: add(ups?.totalLossTrades as unknown as bigint | undefined, isProfit ? 0n : 1n),
-            totalPnL: add(ups?.totalPnL as unknown as bigint | undefined, event.params.percentProfit),
+            totalOpenTrades: add(
+              ups?.totalOpenTrades as unknown as bigint | undefined,
+              -1n
+            ),
+            totalClosedVolume: add(
+              ups?.totalClosedVolume as unknown as bigint | undefined,
+              tr.tradeNotional as unknown as bigint
+            ),
+            totalOpenVolume: add(
+              ups?.totalOpenVolume as unknown as bigint | undefined,
+              -(tr.tradeNotional as unknown as bigint)
+            ),
+            totalClosedCollateral: add(
+              ups?.totalClosedCollateral as unknown as bigint | undefined,
+              tr.collateral as unknown as bigint
+            ),
+            totalProfitTrades: add(
+              ups?.totalProfitTrades as unknown as bigint | undefined,
+              isProfit ? 1n : 0n
+            ),
+            totalLossTrades: add(
+              ups?.totalLossTrades as unknown as bigint | undefined,
+              isProfit ? 0n : 1n
+            ),
+            totalPnL: add(
+              ups?.totalPnL as unknown as bigint | undefined,
+              event.params.percentProfit
+            ),
           } as unknown as UserPairStatEntity;
-          context.UserPairStat.set(ups ? { ...ups, ...upsUpdated } : upsUpdated);
+          context.UserPairStat.set(
+            ups ? { ...ups, ...upsUpdated } : upsUpdated
+          );
         }
       }
-      
+
       // Update Pair statistics
       const pairId = tr.pair_id;
       if (pairId) {
         const pair = await context.Pair.get(pairId);
         const pairUpdated: PairEntity = {
           id: pairId,
-          totalOpenTrades: add(pair?.totalOpenTrades as unknown as bigint | undefined, -1n),
+          totalOpenTrades: add(
+            pair?.totalOpenTrades as unknown as bigint | undefined,
+            -1n
+          ),
         } as unknown as PairEntity;
         context.Pair.set(pair ? { ...pair, ...pairUpdated } : pairUpdated);
       }
-      
+
       // Update MetaData
       const meta = await getMeta(context);
       const isProfit = event.params.percentProfit > 0n;
       const metaUpdated: MetaDataEntity = {
         ...meta,
-        totalOpenTrades: add(meta.totalOpenTrades as unknown as bigint | undefined, -1n),
-        totalClosedVolume: add(meta.totalClosedVolume as unknown as bigint | undefined, tr.tradeNotional as unknown as bigint),
-        totalOpenVolume: add(meta.totalOpenVolume as unknown as bigint | undefined, -(tr.tradeNotional as unknown as bigint)),
-        totalProfitTrades: add(meta.totalProfitTrades as unknown as bigint | undefined, isProfit ? 1n : 0n),
-        totalLossTrades: add(meta.totalLossTrades as unknown as bigint | undefined, isProfit ? 0n : 1n),
-        totalPnL: add(meta.totalPnL as unknown as bigint | undefined, event.params.percentProfit),
+        totalOpenTrades: add(
+          meta.totalOpenTrades as unknown as bigint | undefined,
+          -1n
+        ),
+        totalClosedVolume: add(
+          meta.totalClosedVolume as unknown as bigint | undefined,
+          tr.tradeNotional as unknown as bigint
+        ),
+        totalOpenVolume: add(
+          meta.totalOpenVolume as unknown as bigint | undefined,
+          -(tr.tradeNotional as unknown as bigint)
+        ),
+        totalProfitTrades: add(
+          meta.totalProfitTrades as unknown as bigint | undefined,
+          isProfit ? 1n : 0n
+        ),
+        totalLossTrades: add(
+          meta.totalLossTrades as unknown as bigint | undefined,
+          isProfit ? 0n : 1n
+        ),
+        totalPnL: add(
+          meta.totalPnL as unknown as bigint | undefined,
+          event.params.percentProfit
+        ),
       } as unknown as MetaDataEntity;
       context.MetaData.set(metaUpdated);
     }
@@ -1267,7 +1389,7 @@ OstiumTradingCallbacks.LimitOpenExecuted.handler(async ({ event, context }) => {
     tradeNotional: event.params.tradeNotional,
   };
   context.OstiumTradingCallbacks_LimitOpenExecuted.set(entity);
-  
+
   const orderLimitOpen: OrderEntity = {
     id: `${event.chainId}_${event.block.number}_${event.logIndex}`,
     orderType: "limit_open_exec",
@@ -1290,7 +1412,7 @@ OstiumTradingCallbacks.LimitOpenExecuted.handler(async ({ event, context }) => {
     isCancelled: false,
   } as unknown as OrderEntity;
   context.Order.set(orderLimitOpen);
-  
+
   // Update Limit entity
   const possibleLimitId = `${t[4].toLowerCase()}_${t[1]?.toString()}_${event.params.limitIndex.toString()}`;
   const limitEnt = await context.Limit.get(possibleLimitId);
@@ -1304,7 +1426,7 @@ OstiumTradingCallbacks.LimitOpenExecuted.handler(async ({ event, context }) => {
     } as unknown as LimitEntity;
     context.Limit.set(updatedLimit);
   }
-  
+
   // Create/Update Trade entity (similar to market open)
   const tradeId = t[0]?.toString();
   if (tradeId) {
@@ -1332,20 +1454,32 @@ OstiumTradingCallbacks.LimitOpenExecuted.handler(async ({ event, context }) => {
       timestamp: BigInt(event.block.timestamp),
     } as unknown as TradeEntity;
     context.Trade.set(updatedTrade);
-    
+
     // Update user statistics (similar to market open)
     const userId = t[4].toLowerCase();
     const user = await context.User.get(userId);
     const userUpdated: UserEntity = {
       id: userId,
-      totalOpenTrades: add(user?.totalOpenTrades as unknown as bigint | undefined, 1n),
+      totalOpenTrades: add(
+        user?.totalOpenTrades as unknown as bigint | undefined,
+        1n
+      ),
       totalTrades: add(user?.totalTrades as unknown as bigint | undefined, 1n),
-      totalVolume: add(user?.totalVolume as unknown as bigint | undefined, event.params.tradeNotional),
-      totalOpenVolume: add(user?.totalOpenVolume as unknown as bigint | undefined, event.params.tradeNotional),
-      totalOpenLimitOrders: add(user?.totalOpenLimitOrders as unknown as bigint | undefined, -1n), // Limit was consumed
+      totalVolume: add(
+        user?.totalVolume as unknown as bigint | undefined,
+        event.params.tradeNotional
+      ),
+      totalOpenVolume: add(
+        user?.totalOpenVolume as unknown as bigint | undefined,
+        event.params.tradeNotional
+      ),
+      totalOpenLimitOrders: add(
+        user?.totalOpenLimitOrders as unknown as bigint | undefined,
+        -1n
+      ), // Limit was consumed
     } as unknown as UserEntity;
     context.User.set(user ? { ...user, ...userUpdated } : userUpdated);
-    
+
     // Update UserPairStat
     const pairIdForStats = t[1]?.toString();
     if (pairIdForStats) {
@@ -1355,11 +1489,23 @@ OstiumTradingCallbacks.LimitOpenExecuted.handler(async ({ event, context }) => {
         id: upsId,
         user_id: userId,
         pair_id: pairIdForStats,
-        totalOpenTrades: add(ups?.totalOpenTrades as unknown as bigint | undefined, 1n),
+        totalOpenTrades: add(
+          ups?.totalOpenTrades as unknown as bigint | undefined,
+          1n
+        ),
         totalTrades: add(ups?.totalTrades as unknown as bigint | undefined, 1n),
-        totalVolume: add(ups?.totalVolume as unknown as bigint | undefined, event.params.tradeNotional),
-        totalOpenVolume: add(ups?.totalOpenVolume as unknown as bigint | undefined, event.params.tradeNotional),
-        totalOpenLimitOrders: add(ups?.totalOpenLimitOrders as unknown as bigint | undefined, -1n),
+        totalVolume: add(
+          ups?.totalVolume as unknown as bigint | undefined,
+          event.params.tradeNotional
+        ),
+        totalOpenVolume: add(
+          ups?.totalOpenVolume as unknown as bigint | undefined,
+          event.params.tradeNotional
+        ),
+        totalOpenLimitOrders: add(
+          ups?.totalOpenLimitOrders as unknown as bigint | undefined,
+          -1n
+        ),
       } as unknown as UserPairStatEntity;
       context.UserPairStat.set(ups ? { ...ups, ...upsUpdated } : upsUpdated);
     }
@@ -1379,7 +1525,7 @@ OstiumTradingCallbacks.LimitCloseExecuted.handler(
       usdcSentToTrader: event.params.usdcSentToTrader,
     };
     context.OstiumTradingCallbacks_LimitCloseExecuted.set(entity);
-    
+
     const orderLimitClose: OrderEntity = {
       id: `${event.chainId}_${event.block.number}_${event.logIndex}`,
       orderType: "limit_close_exec",
@@ -1398,7 +1544,7 @@ OstiumTradingCallbacks.LimitCloseExecuted.handler(
       closePercent: 100n, // Assume full close for limit
     } as unknown as OrderEntity;
     context.Order.set(orderLimitClose);
-    
+
     // Close the trade and update statistics (similar to market close)
     const tId = event.params.tradeId.toString();
     const tr = await context.Trade.get(tId);
@@ -1409,7 +1555,7 @@ OstiumTradingCallbacks.LimitCloseExecuted.handler(
         closePrice: event.params.price,
       } as unknown as TradeEntity;
       context.Trade.set(closed);
-      
+
       // Update user statistics
       const userId = tr.trader?.toLowerCase();
       if (userId) {
@@ -1417,14 +1563,38 @@ OstiumTradingCallbacks.LimitCloseExecuted.handler(
         const isProfit = event.params.percentProfit > 0n;
         const userUpdated: UserEntity = {
           id: userId,
-          totalOpenTrades: add(user?.totalOpenTrades as unknown as bigint | undefined, -1n),
-          totalClosedVolume: add(user?.totalClosedVolume as unknown as bigint | undefined, tr.tradeNotional as unknown as bigint),
-          totalOpenVolume: add(user?.totalOpenVolume as unknown as bigint | undefined, -(tr.tradeNotional as unknown as bigint)),
-          totalClosedCollateral: add(user?.totalClosedCollateral as unknown as bigint | undefined, tr.collateral as unknown as bigint),
-          totalProfitTrades: add(user?.totalProfitTrades as unknown as bigint | undefined, isProfit ? 1n : 0n),
-          totalLossTrades: add(user?.totalLossTrades as unknown as bigint | undefined, isProfit ? 0n : 1n),
-          totalPnL: add(user?.totalPnL as unknown as bigint | undefined, event.params.percentProfit),
-          totalTPOrders: add(user?.totalTPOrders as unknown as bigint | undefined, 1n), // Count as TP order
+          totalOpenTrades: add(
+            user?.totalOpenTrades as unknown as bigint | undefined,
+            -1n
+          ),
+          totalClosedVolume: add(
+            user?.totalClosedVolume as unknown as bigint | undefined,
+            tr.tradeNotional as unknown as bigint
+          ),
+          totalOpenVolume: add(
+            user?.totalOpenVolume as unknown as bigint | undefined,
+            -(tr.tradeNotional as unknown as bigint)
+          ),
+          totalClosedCollateral: add(
+            user?.totalClosedCollateral as unknown as bigint | undefined,
+            tr.collateral as unknown as bigint
+          ),
+          totalProfitTrades: add(
+            user?.totalProfitTrades as unknown as bigint | undefined,
+            isProfit ? 1n : 0n
+          ),
+          totalLossTrades: add(
+            user?.totalLossTrades as unknown as bigint | undefined,
+            isProfit ? 0n : 1n
+          ),
+          totalPnL: add(
+            user?.totalPnL as unknown as bigint | undefined,
+            event.params.percentProfit
+          ),
+          totalTPOrders: add(
+            user?.totalTPOrders as unknown as bigint | undefined,
+            1n
+          ), // Count as TP order
         } as unknown as UserEntity;
         context.User.set(user ? { ...user, ...userUpdated } : userUpdated);
       }
@@ -1496,7 +1666,7 @@ OstiumTradingCallbacks.DevFeeCharged.handler(async ({ event, context }) => {
     amount: event.params.amount,
   };
   context.OstiumTradingCallbacks_DevFeeCharged.set(entity);
-  
+
   // Create Order record for dev fee
   const orderEntity: OrderEntity = {
     id: `${event.chainId}_${event.block.number}_${event.logIndex}_devfee`,
@@ -1508,16 +1678,19 @@ OstiumTradingCallbacks.DevFeeCharged.handler(async ({ event, context }) => {
     executedBlock: event.block.number,
   } as unknown as OrderEntity;
   context.Order.set(orderEntity);
-  
+
   // Update user dev fee total
   const userId = event.params.trader.toLowerCase();
   const user = await context.User.get(userId);
   const userUpdated: UserEntity = {
     id: userId,
-    totalDevFee: add(user?.totalDevFee as unknown as bigint | undefined, event.params.amount),
+    totalDevFee: add(
+      user?.totalDevFee as unknown as bigint | undefined,
+      event.params.amount
+    ),
   } as unknown as UserEntity;
   context.User.set(user ? { ...user, ...userUpdated } : userUpdated);
-  
+
   // Update UserPairStat if we can determine the pair
   const trade = await context.Trade.get(event.params.tradeId.toString());
   if (trade?.pair_id) {
@@ -1527,16 +1700,22 @@ OstiumTradingCallbacks.DevFeeCharged.handler(async ({ event, context }) => {
       id: upsId,
       user_id: userId,
       pair_id: trade.pair_id,
-      totalDevFee: add(ups?.totalDevFee as unknown as bigint | undefined, event.params.amount),
+      totalDevFee: add(
+        ups?.totalDevFee as unknown as bigint | undefined,
+        event.params.amount
+      ),
     } as unknown as UserPairStatEntity;
     context.UserPairStat.set(ups ? { ...ups, ...upsUpdated } : upsUpdated);
   }
-  
+
   // Update MetaData dev fee total
   const meta = await getMeta(context);
   const metaUpdated: MetaDataEntity = {
     ...meta,
-    totalDevFee: add(meta.totalDevFee as unknown as bigint | undefined, event.params.amount),
+    totalDevFee: add(
+      meta.totalDevFee as unknown as bigint | undefined,
+      event.params.amount
+    ),
   } as unknown as MetaDataEntity;
   context.MetaData.set(metaUpdated);
 });
@@ -1550,7 +1729,7 @@ OstiumTradingCallbacks.VaultOpeningFeeCharged.handler(
       amount: event.params.amount,
     };
     context.OstiumTradingCallbacks_VaultOpeningFeeCharged.set(entity);
-    
+
     // Create Order record for vault opening fee
     const orderEntity: OrderEntity = {
       id: `${event.chainId}_${event.block.number}_${event.logIndex}_vaultfee`,
@@ -1562,16 +1741,19 @@ OstiumTradingCallbacks.VaultOpeningFeeCharged.handler(
       executedBlock: event.block.number,
     } as unknown as OrderEntity;
     context.Order.set(orderEntity);
-    
+
     // Update user vault fee total
     const userId = event.params.trader.toLowerCase();
     const user = await context.User.get(userId);
     const userUpdated: UserEntity = {
       id: userId,
-      totalVaultFee: add(user?.totalVaultFee as unknown as bigint | undefined, event.params.amount),
+      totalVaultFee: add(
+        user?.totalVaultFee as unknown as bigint | undefined,
+        event.params.amount
+      ),
     } as unknown as UserEntity;
     context.User.set(user ? { ...user, ...userUpdated } : userUpdated);
-    
+
     // Update UserPairStat
     const trade = await context.Trade.get(event.params.tradeId.toString());
     if (trade?.pair_id) {
@@ -1581,16 +1763,22 @@ OstiumTradingCallbacks.VaultOpeningFeeCharged.handler(
         id: upsId,
         user_id: userId,
         pair_id: trade.pair_id,
-        totalVaultFee: add(ups?.totalVaultFee as unknown as bigint | undefined, event.params.amount),
+        totalVaultFee: add(
+          ups?.totalVaultFee as unknown as bigint | undefined,
+          event.params.amount
+        ),
       } as unknown as UserPairStatEntity;
       context.UserPairStat.set(ups ? { ...ups, ...upsUpdated } : upsUpdated);
     }
-    
+
     // Update MetaData vault fee total
     const meta = await getMeta(context);
     const metaUpdated: MetaDataEntity = {
       ...meta,
-      totalVaultFee: add(meta.totalVaultFee as unknown as bigint | undefined, event.params.amount),
+      totalVaultFee: add(
+        meta.totalVaultFee as unknown as bigint | undefined,
+        event.params.amount
+      ),
     } as unknown as MetaDataEntity;
     context.MetaData.set(metaUpdated);
   }
@@ -1606,7 +1794,7 @@ OstiumTradingCallbacks.VaultLiqFeeCharged.handler(
       amount: event.params.amount,
     };
     context.OstiumTradingCallbacks_VaultLiqFeeCharged.set(entity);
-    
+
     // Create Order record for liquidation fee
     const orderEntity: OrderEntity = {
       id: `${event.chainId}_${event.block.number}_${event.logIndex}_liqfee`,
@@ -1618,17 +1806,23 @@ OstiumTradingCallbacks.VaultLiqFeeCharged.handler(
       executedBlock: event.block.number,
     } as unknown as OrderEntity;
     context.Order.set(orderEntity);
-    
+
     // Update user liquidation fee total
     const userId = event.params.trader.toLowerCase();
     const user = await context.User.get(userId);
     const userUpdated: UserEntity = {
       id: userId,
-      totalLiquidationFee: add(user?.totalLiquidationFee as unknown as bigint | undefined, event.params.amount),
-      totalLIQOrders: add(user?.totalLIQOrders as unknown as bigint | undefined, 1n),
+      totalLiquidationFee: add(
+        user?.totalLiquidationFee as unknown as bigint | undefined,
+        event.params.amount
+      ),
+      totalLIQOrders: add(
+        user?.totalLIQOrders as unknown as bigint | undefined,
+        1n
+      ),
     } as unknown as UserEntity;
     context.User.set(user ? { ...user, ...userUpdated } : userUpdated);
-    
+
     // Update UserPairStat
     const trade = await context.Trade.get(event.params.tradeId.toString());
     if (trade?.pair_id) {
@@ -1638,18 +1832,30 @@ OstiumTradingCallbacks.VaultLiqFeeCharged.handler(
         id: upsId,
         user_id: userId,
         pair_id: trade.pair_id,
-        totalLiquidationFee: add(ups?.totalLiquidationFee as unknown as bigint | undefined, event.params.amount),
-        totalLIQOrders: add(ups?.totalLIQOrders as unknown as bigint | undefined, 1n),
+        totalLiquidationFee: add(
+          ups?.totalLiquidationFee as unknown as bigint | undefined,
+          event.params.amount
+        ),
+        totalLIQOrders: add(
+          ups?.totalLIQOrders as unknown as bigint | undefined,
+          1n
+        ),
       } as unknown as UserPairStatEntity;
       context.UserPairStat.set(ups ? { ...ups, ...upsUpdated } : upsUpdated);
     }
-    
+
     // Update MetaData liquidation counters
     const meta = await getMeta(context);
     const metaUpdated: MetaDataEntity = {
       ...meta,
-      totalLiquidationFee: add(meta.totalLiquidationFee as unknown as bigint | undefined, event.params.amount),
-      totalLIQOrders: add(meta.totalLIQOrders as unknown as bigint | undefined, 1n),
+      totalLiquidationFee: add(
+        meta.totalLiquidationFee as unknown as bigint | undefined,
+        event.params.amount
+      ),
+      totalLIQOrders: add(
+        meta.totalLIQOrders as unknown as bigint | undefined,
+        1n
+      ),
     } as unknown as MetaDataEntity;
     context.MetaData.set(metaUpdated);
   }
@@ -1663,7 +1869,7 @@ OstiumTradingCallbacks.OracleFeeCharged.handler(async ({ event, context }) => {
     amount: event.params.amount,
   };
   context.OstiumTradingCallbacks_OracleFeeCharged.set(entity);
-  
+
   // Create Order record for oracle fee
   const orderEntity: OrderEntity = {
     id: `${event.chainId}_${event.block.number}_${event.logIndex}_oraclefee`,
@@ -1675,16 +1881,19 @@ OstiumTradingCallbacks.OracleFeeCharged.handler(async ({ event, context }) => {
     executedBlock: event.block.number,
   } as unknown as OrderEntity;
   context.Order.set(orderEntity);
-  
+
   // Update user oracle fee total
   const userId = event.params.trader.toLowerCase();
   const user = await context.User.get(userId);
   const userUpdated: UserEntity = {
     id: userId,
-    totalOracleFee: add(user?.totalOracleFee as unknown as bigint | undefined, event.params.amount),
+    totalOracleFee: add(
+      user?.totalOracleFee as unknown as bigint | undefined,
+      event.params.amount
+    ),
   } as unknown as UserEntity;
   context.User.set(user ? { ...user, ...userUpdated } : userUpdated);
-  
+
   // Update UserPairStat
   const trade = await context.Trade.get(event.params.tradeId.toString());
   if (trade?.pair_id) {
@@ -1694,16 +1903,22 @@ OstiumTradingCallbacks.OracleFeeCharged.handler(async ({ event, context }) => {
       id: upsId,
       user_id: userId,
       pair_id: trade.pair_id,
-      totalOracleFee: add(ups?.totalOracleFee as unknown as bigint | undefined, event.params.amount),
+      totalOracleFee: add(
+        ups?.totalOracleFee as unknown as bigint | undefined,
+        event.params.amount
+      ),
     } as unknown as UserPairStatEntity;
     context.UserPairStat.set(ups ? { ...ups, ...upsUpdated } : upsUpdated);
   }
-  
+
   // Update MetaData oracle fee total
   const meta = await getMeta(context);
   const metaUpdated: MetaDataEntity = {
     ...meta,
-    totalOracleFee: add(meta.totalOracleFee as unknown as bigint | undefined, event.params.amount),
+    totalOracleFee: add(
+      meta.totalOracleFee as unknown as bigint | undefined,
+      event.params.amount
+    ),
   } as unknown as MetaDataEntity;
   context.MetaData.set(metaUpdated);
 });
@@ -1750,7 +1965,7 @@ OstiumTradingCallbacks.FeesCharged.handler(async ({ event, context }) => {
     fundingFees: event.params.fundingFees,
   };
   context.OstiumTradingCallbacks_FeesCharged.set(entity);
-  
+
   // Update Order entity with fees
   const orderEntity: OrderEntity = {
     id: `${event.chainId}_${event.block.number}_${event.logIndex}_fees`,
@@ -1763,26 +1978,38 @@ OstiumTradingCallbacks.FeesCharged.handler(async ({ event, context }) => {
     executedBlock: event.block.number,
   } as unknown as OrderEntity;
   context.Order.set(orderEntity);
-  
+
   // Accumulate fees into Trade entity (same as PairsInfos version)
   const tradeId = event.params.tradeId.toString();
   const trade = await context.Trade.get(tradeId);
   if (trade) {
     const updatedTrade: TradeEntity = {
       ...trade,
-      rollover: add(trade.rollover as unknown as bigint | undefined, event.params.rolloverFees),
-      funding: add(trade.funding as unknown as bigint | undefined, event.params.fundingFees),
+      rollover: add(
+        trade.rollover as unknown as bigint | undefined,
+        event.params.rolloverFees
+      ),
+      funding: add(
+        trade.funding as unknown as bigint | undefined,
+        event.params.fundingFees
+      ),
     } as unknown as TradeEntity;
     context.Trade.set(updatedTrade);
   }
-  
+
   // Update user fee counters
   const userId = event.params.trader.toLowerCase();
   const user = await context.User.get(userId);
   const userUpdated: UserEntity = {
     id: userId,
-    totalRolloverFee: add(user?.totalRolloverFee as unknown as bigint | undefined, event.params.rolloverFees),
-    netFundingPayment: add(user?.netFundingPayment as unknown as bigint | undefined, event.params.fundingFees),
+    totalRolloverFee: add(
+      user?.totalRolloverFee as unknown as bigint | undefined,
+      event.params.rolloverFees
+    ),
+    netFundingPayment: add(
+      user?.netFundingPayment as unknown as bigint | undefined,
+      event.params.fundingFees
+    ),
   } as unknown as UserEntity;
   context.User.set(user ? { ...user, ...userUpdated } : userUpdated);
 });
@@ -1805,21 +2032,27 @@ OstiumVault.Deposit.handler(async ({ event, context }) => {
     shares: event.params.shares,
   };
   context.OstiumVault_Deposit.set(entity);
-  
+
   // Update or create LpShare entity
   const userId = event.params.owner.toLowerCase();
   const existingShare = await context.LpShare.get(userId);
   const updatedShare: LpShareEntity = {
     id: userId,
     user: event.params.owner,
-    assets: add(existingShare?.assets as unknown as bigint | undefined, event.params.assets),
-    shares: add(existingShare?.shares as unknown as bigint | undefined, event.params.shares),
+    assets: add(
+      existingShare?.assets as unknown as bigint | undefined,
+      event.params.assets
+    ),
+    shares: add(
+      existingShare?.shares as unknown as bigint | undefined,
+      event.params.shares
+    ),
     lockedAssets: existingShare?.lockedAssets ?? 0n,
     lockedShares: existingShare?.lockedShares ?? 0n,
     hasLocked: existingShare?.hasLocked ?? false,
   } as unknown as LpShareEntity;
   context.LpShare.set(updatedShare);
-  
+
   // Create LpAction record
   const actionEntity: LpActionEntity = {
     id: `${event.chainId}_${event.block.number}_${event.logIndex}`,
@@ -1834,14 +2067,20 @@ OstiumVault.Deposit.handler(async ({ event, context }) => {
     withdrawUnlockEpoch: 0n,
   } as unknown as LpActionEntity;
   context.LpAction.set(actionEntity);
-  
+
   // Update Vault totals
   const vaultId = "ostium_vault";
   const vault = await context.Vault.get(vaultId);
   const updatedVault: VaultEntity = {
     id: vaultId,
-    assets: add(vault?.assets as unknown as bigint | undefined, event.params.assets),
-    shares: add(vault?.shares as unknown as bigint | undefined, event.params.shares),
+    assets: add(
+      vault?.assets as unknown as bigint | undefined,
+      event.params.assets
+    ),
+    shares: add(
+      vault?.shares as unknown as bigint | undefined,
+      event.params.shares
+    ),
   } as unknown as VaultEntity;
   context.Vault.set(vault ? { ...vault, ...updatedVault } : updatedVault);
 });
@@ -1856,13 +2095,15 @@ OstiumVault.Withdraw.handler(async ({ event, context }) => {
     shares: event.params.shares,
   };
   context.OstiumVault_Withdraw.set(entity);
-  
+
   // Update LpShare entity
   const userId = event.params.owner.toLowerCase();
   const existingShare = await context.LpShare.get(userId);
   if (existingShare) {
-    const newAssets = (existingShare.assets as unknown as bigint) - event.params.assets;
-    const newShares = (existingShare.shares as unknown as bigint) - event.params.shares;
+    const newAssets =
+      (existingShare.assets as unknown as bigint) - event.params.assets;
+    const newShares =
+      (existingShare.shares as unknown as bigint) - event.params.shares;
     const updatedShare: LpShareEntity = {
       ...existingShare,
       assets: newAssets < 0n ? 0n : newAssets,
@@ -1870,7 +2111,7 @@ OstiumVault.Withdraw.handler(async ({ event, context }) => {
     } as unknown as LpShareEntity;
     context.LpShare.set(updatedShare);
   }
-  
+
   // Create LpAction record
   const actionEntity: LpActionEntity = {
     id: `${event.chainId}_${event.block.number}_${event.logIndex}`,
@@ -1885,7 +2126,7 @@ OstiumVault.Withdraw.handler(async ({ event, context }) => {
     withdrawUnlockEpoch: 0n,
   } as unknown as LpActionEntity;
   context.LpAction.set(actionEntity);
-  
+
   // Update Vault totals
   const vaultId = "ostium_vault";
   const vault = await context.Vault.get(vaultId);
@@ -1911,7 +2152,7 @@ OstiumVault.WithdrawRequested.handler(async ({ event, context }) => {
     unlockEpoch: event.params.unlockEpoch,
   };
   context.OstiumVault_WithdrawRequested.set(entity);
-  
+
   // Create LpAction record for withdraw request
   const actionEntity: LpActionEntity = {
     id: `${event.chainId}_${event.block.number}_${event.logIndex}`,
@@ -1926,7 +2167,7 @@ OstiumVault.WithdrawRequested.handler(async ({ event, context }) => {
     withdrawUnlockEpoch: event.params.unlockEpoch,
   } as unknown as LpActionEntity;
   context.LpAction.set(actionEntity);
-  
+
   // Update Vault current epoch if newer
   const vaultId = "ostium_vault";
   const vault = await context.Vault.get(vaultId);
@@ -1947,7 +2188,7 @@ OstiumVault.WithdrawCanceled.handler(async ({ event, context }) => {
     unlockEpoch: event.params.unlockEpoch,
   };
   context.OstiumVault_WithdrawCanceled.set(entity);
-  
+
   // Create LpAction record for withdraw cancellation
   const actionEntity: LpActionEntity = {
     id: `${event.chainId}_${event.block.number}_${event.logIndex}`,
@@ -1979,7 +2220,7 @@ OstiumVault.DepositLocked.handler(async ({ event, context }) => {
     d_5: d[5],
   };
   context.OstiumVault_DepositLocked.set(entity);
-  
+
   // Create LpNFT entity
   const nftId = event.params.depositId.toString();
   const nftEntity: LpNFTEntity = {
@@ -1993,7 +2234,7 @@ OstiumVault.DepositLocked.handler(async ({ event, context }) => {
     isUnlocked: false,
   } as unknown as LpNFTEntity;
   context.LpNFT.set(nftEntity);
-  
+
   // Update LpShare entity to track locked amounts
   const userId = event.params.owner.toLowerCase();
   const existingShare = await context.LpShare.get(userId);
@@ -2002,12 +2243,18 @@ OstiumVault.DepositLocked.handler(async ({ event, context }) => {
     user: event.params.owner,
     assets: existingShare?.assets ?? 0n,
     shares: existingShare?.shares ?? 0n,
-    lockedAssets: add(existingShare?.lockedAssets as unknown as bigint | undefined, d[1]),
-    lockedShares: add(existingShare?.lockedShares as unknown as bigint | undefined, d[3]),
+    lockedAssets: add(
+      existingShare?.lockedAssets as unknown as bigint | undefined,
+      d[1]
+    ),
+    lockedShares: add(
+      existingShare?.lockedShares as unknown as bigint | undefined,
+      d[3]
+    ),
     hasLocked: true,
   } as unknown as LpShareEntity;
   context.LpShare.set(updatedShare);
-  
+
   // Create LpAction record
   const actionEntity: LpActionEntity = {
     id: `${event.chainId}_${event.block.number}_${event.logIndex}`,
@@ -2022,13 +2269,16 @@ OstiumVault.DepositLocked.handler(async ({ event, context }) => {
     withdrawUnlockEpoch: 0n,
   } as unknown as LpActionEntity;
   context.LpAction.set(actionEntity);
-  
+
   // Update Vault locked users count
   const vaultId = "ostium_vault";
   const vault = await context.Vault.get(vaultId);
   const updatedVault: VaultEntity = {
     id: vaultId,
-    totalLockedUsers: add(vault?.totalLockedUsers as unknown as bigint | undefined, 1n),
+    totalLockedUsers: add(
+      vault?.totalLockedUsers as unknown as bigint | undefined,
+      1n
+    ),
   } as unknown as VaultEntity;
   context.Vault.set(vault ? { ...vault, ...updatedVault } : updatedVault);
 });
@@ -2049,7 +2299,7 @@ OstiumVault.DepositUnlocked.handler(async ({ event, context }) => {
     d_5: d[5],
   };
   context.OstiumVault_DepositUnlocked.set(entity);
-  
+
   // Update LpNFT entity to mark as unlocked
   const nftId = event.params.depositId.toString();
   const existingNft = await context.LpNFT.get(nftId);
@@ -2059,13 +2309,15 @@ OstiumVault.DepositUnlocked.handler(async ({ event, context }) => {
       isUnlocked: true,
     } as unknown as LpNFTEntity;
     context.LpNFT.set(updatedNft);
-    
+
     // Update LpShare entity to reduce locked amounts
     const userId = event.params.owner.toLowerCase();
     const existingShare = await context.LpShare.get(userId);
     if (existingShare) {
-      const newLockedAssets = (existingShare.lockedAssets as unknown as bigint) - d[1];
-      const newLockedShares = (existingShare.lockedShares as unknown as bigint) - d[3];
+      const newLockedAssets =
+        (existingShare.lockedAssets as unknown as bigint) - d[1];
+      const newLockedShares =
+        (existingShare.lockedShares as unknown as bigint) - d[3];
       const updatedShare: LpShareEntity = {
         ...existingShare,
         lockedAssets: newLockedAssets < 0n ? 0n : newLockedAssets,
@@ -2075,7 +2327,7 @@ OstiumVault.DepositUnlocked.handler(async ({ event, context }) => {
       context.LpShare.set(updatedShare);
     }
   }
-  
+
   // Create LpAction record
   const actionEntity: LpActionEntity = {
     id: `${event.chainId}_${event.block.number}_${event.logIndex}`,
@@ -2102,7 +2354,7 @@ OstiumVault.AccPnlPerTokenUsedUpdated.handler(async ({ event, context }) => {
     newAccPnlPerTokenUsed: event.params.newAccPnlPerTokenUsed,
   };
   context.OstiumVault_AccPnlPerTokenUsedUpdated.set(entity);
-  
+
   // Update Vault entity
   const vaultId = "ostium_vault";
   const vault = await context.Vault.get(vaultId);
@@ -2149,7 +2401,7 @@ OstiumVault.RewardDistributed.handler(async ({ event, context }) => {
     accRewardsPerToken: event.params.accRewardsPerToken,
   };
   context.OstiumVault_RewardDistributed.set(entity);
-  
+
   // Update Vault rewards
   const vaultId = "ostium_vault";
   const vault = await context.Vault.get(vaultId);
@@ -2166,7 +2418,7 @@ OstiumVault.MaxDiscountPUpdated.handler(async ({ event, context }) => {
     value: event.params.value,
   };
   context.OstiumVault_MaxDiscountPUpdated.set(entity);
-  
+
   // Update Vault max discount
   const vaultId = "ostium_vault";
   const vault = await context.Vault.get(vaultId);
@@ -2183,7 +2435,7 @@ OstiumVault.MaxDiscountThresholdPUpdated.handler(async ({ event, context }) => {
     value: event.params.value,
   };
   context.OstiumVault_MaxDiscountThresholdPUpdated.set(entity);
-  
+
   // Update Vault max discount threshold
   const vaultId = "ostium_vault";
   const vault = await context.Vault.get(vaultId);
@@ -2200,7 +2452,7 @@ OstiumVault.CurrentMaxSupplyUpdated.handler(async ({ event, context }) => {
     value: event.params.value,
   };
   context.OstiumVault_CurrentMaxSupplyUpdated.set(entity);
-  
+
   // Update Vault current max supply
   const vaultId = "ostium_vault";
   const vault = await context.Vault.get(vaultId);
@@ -2240,26 +2492,34 @@ OstiumLockedDepositNft.Transfer.handler(async ({ event, context }) => {
     tokenId: event.params.tokenId,
   };
   context.OstiumLockedDepositNft_Transfer.set(entity);
-  
+
   // Update LpNFT owner on transfer (skip mint/burn with zero addresses)
   const nftId = event.params.tokenId.toString();
   const existingNft = await context.LpNFT.get(nftId);
-  if (existingNft && event.params.from !== "0x0000000000000000000000000000000000000000" && event.params.to !== "0x0000000000000000000000000000000000000000") {
+  if (
+    existingNft &&
+    event.params.from !== "0x0000000000000000000000000000000000000000" &&
+    event.params.to !== "0x0000000000000000000000000000000000000000"
+  ) {
     const updatedNft: LpNFTEntity = {
       ...existingNft,
       user: event.params.to,
     } as unknown as LpNFTEntity;
     context.LpNFT.set(updatedNft);
-    
+
     // Update LpShare entities for both old and new owners
     const oldUserId = event.params.from.toLowerCase();
     const newUserId = event.params.to.toLowerCase();
-    
+
     // Remove from old owner
     const oldShare = await context.LpShare.get(oldUserId);
     if (oldShare) {
-      const newOldLockedAssets = (oldShare.lockedAssets as unknown as bigint) - (existingNft.assetsDeposited as unknown as bigint);
-      const newOldLockedShares = (oldShare.lockedShares as unknown as bigint) - (existingNft.shares as unknown as bigint);
+      const newOldLockedAssets =
+        (oldShare.lockedAssets as unknown as bigint) -
+        (existingNft.assetsDeposited as unknown as bigint);
+      const newOldLockedShares =
+        (oldShare.lockedShares as unknown as bigint) -
+        (existingNft.shares as unknown as bigint);
       const updatedOldShare: LpShareEntity = {
         ...oldShare,
         lockedAssets: newOldLockedAssets < 0n ? 0n : newOldLockedAssets,
@@ -2268,7 +2528,7 @@ OstiumLockedDepositNft.Transfer.handler(async ({ event, context }) => {
       } as unknown as LpShareEntity;
       context.LpShare.set(updatedOldShare);
     }
-    
+
     // Add to new owner
     const newShare = await context.LpShare.get(newUserId);
     const updatedNewShare: LpShareEntity = {
@@ -2276,8 +2536,14 @@ OstiumLockedDepositNft.Transfer.handler(async ({ event, context }) => {
       user: event.params.to,
       assets: newShare?.assets ?? 0n,
       shares: newShare?.shares ?? 0n,
-      lockedAssets: add(newShare?.lockedAssets as unknown as bigint | undefined, existingNft.assetsDeposited as unknown as bigint),
-      lockedShares: add(newShare?.lockedShares as unknown as bigint | undefined, existingNft.shares as unknown as bigint),
+      lockedAssets: add(
+        newShare?.lockedAssets as unknown as bigint | undefined,
+        existingNft.assetsDeposited as unknown as bigint
+      ),
+      lockedShares: add(
+        newShare?.lockedShares as unknown as bigint | undefined,
+        existingNft.shares as unknown as bigint
+      ),
       hasLocked: true,
     } as unknown as LpShareEntity;
     context.LpShare.set(updatedNewShare);
