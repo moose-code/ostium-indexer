@@ -79,22 +79,43 @@ networks:
         events:
           - event: >-
               MarketOpenExecuted(uint256 indexed orderId,(uint256,uint192,uint192,uint192,address,uint32,uint16,uint8,bool),uint256 priceImpactP,uint256 tradeNotional)
+            field_selection:
+              transaction_fields:
+                - hash
           - event: MarketCloseExecuted(uint256 indexed orderId, uint256 indexed tradeId, uint256 price, uint256 priceImpactP, int256 percentProfit, uint256 usdcSentToTrader)
+            field_selection:
+              transaction_fields:
+                - hash
           - event: MarketCloseExecutedV2(uint256 indexed orderId, uint256 indexed tradeId, uint256 price, uint256 priceImpactP, int256 percentProfit, uint256 usdcSentToTrader, uint256 percentageClosed)
+            field_selection:
+              transaction_fields:
+                - hash
           - event: >-
               LimitOpenExecuted(uint256 indexed orderId, uint256 limitIndex,(uint256,uint192,uint192,uint192,address,uint32,uint16,uint8,bool),uint256 priceImpactP,uint256 tradeNotional)
+            field_selection:
+              transaction_fields:
+                - hash
           - event: LimitCloseExecuted(uint256 indexed orderId, uint256 indexed tradeId, uint8 index, uint256 price, uint256 priceImpactP, int256 percentProfit, uint256 usdcSentToTrader)
+            field_selection:
+              transaction_fields:
+                - hash
           - event: MarketOpenCanceled(uint256 indexed orderId, address indexed trader, uint256 indexed pairIndex, uint8 cancelReason)
           - event: MarketCloseCanceled(uint256 indexed orderId, uint256 indexed tradeId, address indexed trader, uint256 pairIndex, uint256 index, uint8 cancelReason)
           - event: AutomationCloseOrderCanceled(uint256 indexed orderId, uint256 indexed tradeId, address indexed trader, uint256 pairIndex, uint8 index, uint8 cancelReason)
           - event: AutomationOpenOrderCanceled(uint256 indexed orderId, address indexed trader, uint256 indexed pairIndex, uint8 cancelReason)
           - event: DevFeeCharged(uint256 indexed tradeId, address indexed trader, uint256 amount)
+            field_selection:
+              transaction_fields:
+                - hash
           - event: VaultOpeningFeeCharged(uint256 indexed tradeId, address indexed trader, uint256 amount)
           - event: VaultLiqFeeCharged(uint256 indexed orderId, uint256 indexed tradeId, address indexed trader, uint256 amount)
           - event: OracleFeeCharged(uint256 indexed tradeId, address indexed trader, uint256 amount)
           - event: RemoveCollateralExecuted(uint256 indexed tradeId, uint256 indexed orderId, address indexed trader, uint16 pairIndex, uint256 removeAmount, uint32 leverage, uint192 tp, uint192 sl)
           - event: RemoveCollateralRejected(uint256 indexed tradeId, uint256 indexed orderId, address indexed trader, uint16 pairIndex, uint256 removeAmount, uint8 reason)
           - event: FeesCharged(uint256 indexed orderId, uint256 indexed tradeId, address indexed trader, uint256 rolloverFees, int256 fundingFees)
+            field_selection:
+              transaction_fields:
+                - hash
           - event: Paused(bool paused)
       - name: OstiumVault
         address:
