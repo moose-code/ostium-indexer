@@ -1,0 +1,332 @@
+type Order @entity {
+  id: ID!
+  trader: Bytes! # address
+  pair: Pair! # uint256
+  tradeID: String!
+  limitID: String!
+  orderType: String!
+  orderAction: String!
+  price: BigInt!
+  priceAfterImpact: BigInt!
+  priceImpactP: BigInt!
+  collateral: BigInt!
+  notional: BigInt!
+  tradeNotional: BigInt!
+  profitPercent: BigInt!
+  totalProfitPercent: BigInt!
+  amountSentToTrader: BigInt!
+  isBuy: Boolean!
+  initiatedAt: BigInt!
+  executedAt: BigInt
+  initiatedTx: Bytes!
+  executedTx: Bytes
+  initiatedBlock: BigInt!
+  executedBlock: BigInt!
+  leverage: BigInt!
+  isPending: Boolean!
+  isCancelled: Boolean!
+  cancelReason: String!
+  devFee: BigInt!
+  vaultFee: BigInt!
+  oracleFee: BigInt!
+  liquidationFee: BigInt!
+  fundingFee: BigInt!
+  rolloverFee: BigInt!
+  closePercent: BigInt!
+}
+
+type Trade @entity {
+  id: ID!
+  trader: Bytes! # address
+  pair: Pair! # uint256
+  index: String!
+  tradeID: String!
+  tradeType: String!
+  openPrice: BigInt!
+  closePrice: BigInt!
+  takeProfitPrice: BigInt!
+  stopLossPrice: BigInt!
+  collateral: BigInt!
+  notional: BigInt!
+  tradeNotional: BigInt!
+  highestLeverage: BigInt!
+  leverage: BigInt!
+  isBuy: Boolean!
+  isOpen: Boolean!
+  closeInitiated: BigInt!
+  funding: BigInt!
+  rollover: BigInt!
+  timestamp: BigInt!
+}
+
+type Limit @entity {
+  id: ID!
+  trader: Bytes! # address
+  pair: Pair! # uint256
+  collateral: BigInt!
+  isBuy: Boolean!
+  leverage: BigInt!
+  notional: BigInt!
+  tradeNotional: BigInt!
+  takeProfitPrice: BigInt!
+  stopLossPrice: BigInt!
+  openPrice: BigInt!
+  block: BigInt!
+  uniqueId: String!
+  orderId: String!
+  isActive: Boolean!
+  limitType: String!
+  initiatedAt: BigInt!
+  updatedAt: BigInt!
+  executionStarted: BigInt!
+}
+
+type Pair @entity {
+  id: ID!
+  from: String!
+  to: String!
+  feed: String!
+  spreadP: BigInt!
+  longOI: BigInt!
+  shortOI: BigInt!
+  maxOI: BigInt!
+  maxLeverage: BigInt!
+  overnightMaxLeverage: BigInt
+  volume: BigInt!
+  accFundingLong: BigInt!
+  accFundingShort: BigInt!
+  accRollover: BigInt!
+  curFundingLong: BigInt!
+  curFundingShort: BigInt!
+  curRollover: BigInt!
+  rolloverFeePerBlock: BigInt!
+  lastFundingVelocity: BigInt!
+  lastOiDelta: BigInt!
+  lastFundingRate: BigInt!
+  lastFundingTime: BigInt!
+  lastRolloverTime: BigInt!
+  lastFundingBlock: BigInt!
+  lastRolloverBlock: BigInt!
+  makerFeeP: BigInt!
+  takerFeeP: BigInt!
+  usageFeeP: BigInt!
+  vaultFeePercent: BigInt!
+  utilizationThresholdP: BigInt!
+  makerMaxLeverage: BigInt!
+  maxFundingFeePerBlock: BigInt!
+  maxFundingFeeVelocity: BigInt!
+  fundingFeeSlope: BigInt!
+  hillInflectionPoint: BigInt!
+  springFactor: BigInt!
+  hillPosScale: BigInt!
+  hillNegScale: BigInt!
+  sFactorUpScaleP: BigInt!
+  sFactorDownScaleP: BigInt!
+  lastTradePrice: BigInt!
+  maxRolloverVolatility: BigInt!
+  maxRolloverFeePerBlock: BigInt!
+  rolloverFeeSlope: BigInt!
+  tradeSizeRef: BigInt!
+  totalOpenTrades: BigInt!
+  totalOpenLimitOrders: BigInt!
+  group: Group!
+  fee: Fee!
+}
+
+type Group @entity {
+  id: ID!
+  name: String!
+  minLeverage: BigInt!
+  maxLeverage: BigInt!
+  maxCollateralP: BigInt!
+  longCollateral: BigInt!
+  shortCollateral: BigInt!
+}
+
+type Fee @entity {
+  id: ID!
+  liqFeeP: BigInt!
+  oracleFee: BigInt!
+  minLevPos: BigInt!
+}
+
+type LpShare @entity {
+  id: ID!
+  user: Bytes! # address
+  assets: BigInt!
+  shares: BigInt!
+  lockedAssets: BigInt!
+  lockedShares: BigInt!
+  hasLocked: Boolean!
+}
+
+type LpAction @entity {
+  id: ID!
+  user: Bytes! # address
+  assets: BigInt!
+  shares: BigInt!
+  type: String!
+  epoch: BigInt!
+  timestamp: BigInt!
+  withdrawShares: BigInt!
+  withdrawRequestEpoch: BigInt!
+  withdrawUnlockEpoch: BigInt!
+}
+
+type LpNFT @entity {
+  id: ID!
+  user: Bytes! # address
+  assetsDeposited: BigInt!
+  assetsDiscount: BigInt!
+  shares: BigInt!
+  atTime: BigInt!
+  lockDuration: BigInt!
+  isUnlocked: Boolean!
+}
+
+type Vault @entity {
+  id: ID!
+  currentEpoch: BigInt!
+  currentEpochStart: BigInt!
+  currentEpochEnd: BigInt!
+  assets: BigInt!
+  shares: BigInt!
+  sharePrice: BigInt!
+  rewardsPerToken: BigInt!
+  totalLockedUsers: BigInt!
+  accPnlPerTokenUsed: BigInt!
+  currentMaxSupply: BigInt!
+  maxDiscountP: BigInt!
+  maxDiscountThresholdP: BigInt!
+}
+
+type EpochShare @entity {
+  id: ID!
+  epoch: BigInt!
+  sharePrice: BigInt!
+  sharePriceDiff: BigInt!
+  rewardsPerToken: BigInt!
+  rewardsPerTokenDiff: BigInt!
+  timestamp: BigInt!
+}
+
+type ShareToAssetsPriceDaily @entity {
+  id: ID!
+  sharePrice: BigInt!
+  timestamp: BigInt!
+  day: String!
+}
+
+type User @entity {
+  id: ID!
+  totalOpenTrades: BigInt!
+  totalTrades: BigInt!
+  totalMarketOrders: BigInt!
+  totalOpenLimitOrders: BigInt!
+  totalTPOrders: BigInt!
+  totalSLOrders: BigInt!
+  totalLIQOrders: BigInt!
+  totalCancelledOrders: BigInt!
+  totalVolume: BigInt!
+  totalOpenVolume: BigInt!
+  totalClosedVolume: BigInt!
+  totalProfitTrades: BigInt!
+  totalLossTrades: BigInt!
+  totalPnL: BigInt!
+  totalClosedCollateral: BigInt!
+  totalDevFee: BigInt!
+  totalVaultFee: BigInt!
+  totalOracleFee: BigInt!
+  totalLiquidationFee: BigInt!
+  totalRolloverFee: BigInt!
+  netFundingPayment: BigInt!
+  keeperAllowance: BigInt!
+  userPairStats: [UserPairStat!]! @derivedFrom(field: "user")
+  userGroupStats: [UserGroupStat!]! @derivedFrom(field: "user")
+}
+
+type UserPairStat @entity {
+  id: ID!
+  pair: Pair!
+  totalOpenTrades: BigInt!
+  totalTrades: BigInt!
+  totalMarketOrders: BigInt!
+  totalOpenLimitOrders: BigInt!
+  totalTPOrders: BigInt!
+  totalSLOrders: BigInt!
+  totalLIQOrders: BigInt!
+  totalCancelledOrders: BigInt!
+  totalVolume: BigInt!
+  totalOpenVolume: BigInt!
+  totalClosedVolume: BigInt!
+  totalProfitTrades: BigInt!
+  totalLossTrades: BigInt!
+  totalPnL: BigInt!
+  totalClosedCollateral: BigInt!
+  totalDevFee: BigInt!
+  totalVaultFee: BigInt!
+  totalOracleFee: BigInt!
+  totalLiquidationFee: BigInt!
+  totalRolloverFee: BigInt!
+  netFundingPayment: BigInt!
+  user: User!
+}
+
+type UserGroupStat @entity {
+  id: ID!
+  group: Group!
+  totalOpenTrades: BigInt!
+  totalTrades: BigInt!
+  totalMarketOrders: BigInt!
+  totalOpenLimitOrders: BigInt!
+  totalTPOrders: BigInt!
+  totalSLOrders: BigInt!
+  totalLIQOrders: BigInt!
+  totalCancelledOrders: BigInt!
+  totalVolume: BigInt!
+  totalOpenVolume: BigInt!
+  totalClosedVolume: BigInt!
+  totalProfitTrades: BigInt!
+  totalLossTrades: BigInt!
+  totalPnL: BigInt!
+  totalClosedCollateral: BigInt!
+  totalDevFee: BigInt!
+  totalVaultFee: BigInt!
+  totalOracleFee: BigInt!
+  totalLiquidationFee: BigInt!
+  totalRolloverFee: BigInt!
+  netFundingPayment: BigInt!
+  user: User!
+}
+
+type MetaData @entity {
+  id: ID!
+  isTradingPaused: Boolean!
+  isCallbackPaused: Boolean!
+  maxTradesPerPair: BigInt!
+  maxPendingMarketOrders: BigInt!
+  liqThresholdP: BigInt!
+  liqMarginThresholdP: BigInt
+  maxNegativePnlOnOpenP: BigInt!
+  marketOrdersTimeout: BigInt
+  maxAllowedCollateral: BigInt
+  totalUsers: BigInt!
+  totalOpenTrades: BigInt!
+  totalTrades: BigInt!
+  totalMarketOrders: BigInt!
+  totalOpenLimitOrders: BigInt!
+  totalTPOrders: BigInt!
+  totalSLOrders: BigInt!
+  totalLIQOrders: BigInt!
+  totalVolume: BigInt!
+  totalOpenVolume: BigInt!
+  totalClosedVolume: BigInt!
+  totalProfitTrades: BigInt!
+  totalLossTrades: BigInt!
+  totalPnL: BigInt!
+  totalDevFee: BigInt!
+  totalVaultFee: BigInt!
+  totalOracleFee: BigInt!
+  totalLiquidationFee: BigInt!
+  totalRolloverFee: BigInt!
+}
