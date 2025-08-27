@@ -21,8 +21,11 @@ import {
   LpNFT as LpNFTEntity,
   User as UserEntity,
   UserPairStat as UserPairStatEntity,
+  UserGroupStat as UserGroupStatEntity,
   ShareToAssetsPriceDaily as ShareToAssetsPriceDailyEntity,
   EpochShare as EpochShareEntity,
+  Group as GroupEntity,
+  Fee as FeeEntity,
 } from "generated";
 
 function toDayString(ts: bigint): string {
@@ -47,6 +50,29 @@ function add(a?: bigint, b?: bigint): bigint {
 function sub(a?: bigint, b?: bigint): bigint {
   return (a ?? 0n) - (b ?? 0n);
 }
+
+async function updateUserGroupStat(
+  context: any,
+  userId: string, 
+  pairId: string, 
+  updates: Partial<UserGroupStatEntity>
+): Promise<void> {
+  // Get the pair to determine group_id
+  const pair = await context.Pair.get(pairId);
+  if (!pair?.group_id) return;
+  
+  const ugsId = `${userId}_${pair.group_id}`;
+  const existing = await context.UserGroupStat.get(ugsId);
+  const updated: UserGroupStatEntity = {
+    id: ugsId,
+    user_id: userId,
+    group_id: pair.group_id,
+    ...updates,
+  } as unknown as UserGroupStatEntity;
+  context.UserGroupStat.set(existing ? { ...existing, ...updated } : updated);
+}
+
+
 
 // =====================
 // PAIR STORAGE HANDLERS
@@ -90,6 +116,39 @@ OstiumPairsStorage.PairOvernightMaxLeverageUpdated.handler(
     }
   }
 );
+
+OstiumPairsStorage.GroupUpdated.handler(async ({ event, context }) => {
+  const groupId = event.params.index.toString();
+  const existing = await context.Group.get(groupId);
+  // Note: Group data would need to be fetched from contract storage via Effect
+  // For now, creating placeholder that can be filled via Effect in future
+  const group: GroupEntity = {
+    id: groupId,
+    name: `Group ${groupId}`,
+    minLeverage: 0n,
+    maxLeverage: 0n,
+    maxCollateralP: 0n,
+    longCollateral: 0n,
+    shortCollateral: 0n,
+  } as GroupEntity;
+  context.Group.set(existing ? { ...existing, ...group } : group);
+});
+
+OstiumPairsStorage.FeeUpdated.handler(async ({ event, context }) => {
+  const feeId = event.params.index.toString();
+  const existing = await context.Fee.get(feeId);
+  // Note: Fee data would need to be fetched from contract storage via Effect
+  // For now, creating placeholder that can be filled via Effect in future
+  const fee: FeeEntity = {
+    id: feeId,
+    liqFeeP: 0n,
+    oracleFee: 0n,
+    minLevPos: 0n,
+  } as FeeEntity;
+  context.Fee.set(existing ? { ...existing, ...fee } : fee);
+});
+
+
 
 // =====================
 // PAIR INFO HANDLERS
@@ -142,6 +201,134 @@ OstiumPairsInfos.RolloverFeePerBlockUpdated.handler(
     }
   }
 );
+
+OstiumPairsInfos.AccFundingFeesStored.handler(async ({ event, context }) => {
+  const pairId = event.params.pairIndex.toString();
+  const existing = await context.Pair.get(pairId);
+  const updated: PairEntity = {
+    id: pairId,
+    accFundingLong: event.params.valueLong,
+    accFundingShort: event.params.valueShort,
+    lastFundingRate: event.params.lastFundingRate,
+    lastFundingVelocity: event.params.velocity,
+    lastFundingTime: BigInt(event.block.timestamp),
+    lastFundingBlock: event.block.number,
+  } as unknown as PairEntity;
+  context.Pair.set(existing ? { ...existing, ...updated } : updated);
+});
+
+OstiumPairsInfos.AccFundingFeesStoredV2.handler(async ({ event, context }) => {
+  const pairId = event.params.pairIndex.toString();
+  const existing = await context.Pair.get(pairId);
+  const updated: PairEntity = {
+    id: pairId,
+    accFundingLong: event.params.valueLong,
+    accFundingShort: event.params.valueShort,
+    lastOiDelta: event.params.lastOiDelta,
+    lastFundingRate: event.params.lastFundingRate,
+    lastFundingTime: BigInt(event.block.timestamp),
+    lastFundingBlock: event.block.number,
+  } as unknown as PairEntity;
+  context.Pair.set(existing ? { ...existing, ...updated } : updated);
+});
+
+OstiumPairsInfos.AccRolloverFeesStored.handler(async ({ event, context }) => {
+  const pairId = event.params.pairIndex.toString();
+  const existing = await context.Pair.get(pairId);
+  const updated: PairEntity = {
+    id: pairId,
+    accRollover: event.params.value,
+    lastRolloverTime: BigInt(event.block.timestamp),
+    lastRolloverBlock: event.block.number,
+  } as unknown as PairEntity;
+  context.Pair.set(existing ? { ...existing, ...updated } : updated);
+});
+
+OstiumPairsInfos.FundingFeeSlopeUpdated.handler(async ({ event, context }) => {
+  const pairId = event.params.pairIndex.toString();
+  const existing = await context.Pair.get(pairId);
+  if (existing) {
+    const updated: PairEntity = {
+      ...existing,
+      fundingFeeSlope: event.params.value,
+    };
+    context.Pair.set(updated);
+  }
+});
+
+OstiumPairsInfos.HillParamsUpdated.handler(async ({ event, context }) => {
+  const pairId = event.params.pairIndex.toString();
+  const existing = await context.Pair.get(pairId);
+  if (existing) {
+    const updated: PairEntity = {
+      ...existing,
+      hillInflectionPoint: event.params.hillInflectionPoint,
+      hillPosScale: event.params.hillPosScale,
+      hillNegScale: event.params.hillNegScale,
+    };
+    context.Pair.set(updated);
+  }
+});
+
+OstiumPairsInfos.LastVelocityUpdated.handler(async ({ event, context }) => {
+  const pairId = event.params.pairIndex.toString();
+  const existing = await context.Pair.get(pairId);
+  if (existing) {
+    const updated: PairEntity = {
+      ...existing,
+      lastFundingVelocity: event.params.value,
+    };
+    context.Pair.set(updated);
+  }
+});
+
+OstiumPairsInfos.MaxFundingFeePerBlockUpdated.handler(async ({ event, context }) => {
+  const pairId = event.params.pairIndex.toString();
+  const existing = await context.Pair.get(pairId);
+  if (existing) {
+    const updated: PairEntity = {
+      ...existing,
+      maxFundingFeePerBlock: event.params.value,
+    };
+    context.Pair.set(updated);
+  }
+});
+
+OstiumPairsInfos.MaxFundingFeeVelocityUpdated.handler(async ({ event, context }) => {
+  const pairId = event.params.pairIndex.toString();
+  const existing = await context.Pair.get(pairId);
+  if (existing) {
+    const updated: PairEntity = {
+      ...existing,
+      maxFundingFeeVelocity: event.params.value,
+    };
+    context.Pair.set(updated);
+  }
+});
+
+OstiumPairsInfos.MaxRolloverVolatilityUpdated.handler(async ({ event, context }) => {
+  const pairId = event.params.pairIndex.toString();
+  const existing = await context.Pair.get(pairId);
+  if (existing) {
+    const updated: PairEntity = {
+      ...existing,
+      maxRolloverVolatility: event.params.value,
+    };
+    context.Pair.set(updated);
+  }
+});
+
+OstiumPairsInfos.MaxRolloverFeeSlopeUpdated.handler(async ({ event, context }) => {
+  const pairId = event.params.pairIndex.toString();
+  const existing = await context.Pair.get(pairId);
+  if (existing) {
+    const updated: PairEntity = {
+      ...existing,
+      rolloverFeeSlope: event.params.value,
+    };
+    context.Pair.set(updated);
+  }
+});
 
 OstiumPairsInfos.FeesCharged.handler(async ({ event, context }) => {
   // Accumulate fees into Trade entity
@@ -208,6 +395,94 @@ OstiumPairsInfos.FeesCharged.handler(async ({ event, context }) => {
     ),
   } as unknown as MetaDataEntity;
   context.MetaData.set(metaUpdated);
+});
+
+OstiumPairsInfos.LiqThresholdPUpdated.handler(async ({ event, context }) => {
+  const meta = await getMeta(context);
+  const updated: MetaDataEntity = {
+    ...meta,
+    liqThresholdP: event.params.value,
+  } as unknown as MetaDataEntity;
+  context.MetaData.set(updated);
+});
+
+OstiumPairsInfos.LiqMarginThresholdPUpdated.handler(async ({ event, context }) => {
+  const meta = await getMeta(context);
+  const updated: MetaDataEntity = {
+    ...meta,
+    liqMarginThresholdP: event.params.value,
+  } as unknown as MetaDataEntity;
+  context.MetaData.set(updated);
+});
+
+OstiumPairsInfos.MaxNegativePnlOnOpenPUpdated.handler(async ({ event, context }) => {
+  const meta = await getMeta(context);
+  const updated: MetaDataEntity = {
+    ...meta,
+    maxNegativePnlOnOpenP: event.params.value,
+  } as unknown as MetaDataEntity;
+  context.MetaData.set(updated);
+});
+
+OstiumPairsInfos.PairFundingFeesUpdated.handler(async ({ event, context }) => {
+  const pairId = event.params.pairIndex.toString();
+  const existing = await context.Pair.get(pairId);
+  const updated: PairEntity = {
+    id: pairId,
+    accFundingLong: event.params.value[0],
+    accFundingShort: event.params.value[1],
+    lastFundingRate: event.params.value[2],
+    lastFundingVelocity: event.params.value[3],
+    lastFundingTime: BigInt(event.block.timestamp),
+    lastFundingBlock: event.block.number,
+    curFundingLong: event.params.value[0],
+    curFundingShort: event.params.value[1],
+  } as unknown as PairEntity;
+  context.Pair.set(existing ? { ...existing, ...updated } : updated);
+});
+
+OstiumPairsInfos.PairFundingFeesUpdatedV2.handler(async ({ event, context }) => {
+  const pairId = event.params.pairIndex.toString();
+  const existing = await context.Pair.get(pairId);
+  const updated: PairEntity = {
+    id: pairId,
+    accFundingLong: event.params.value[0],
+    accFundingShort: event.params.value[1],
+    lastFundingRate: event.params.value[2],
+    lastFundingVelocity: event.params.value[3],
+    lastFundingTime: BigInt(event.block.timestamp),
+    lastFundingBlock: event.block.number,
+    lastOiDelta: event.params.value[11], // Last element is usually the delta
+    curFundingLong: event.params.value[0],
+    curFundingShort: event.params.value[1],
+  } as unknown as PairEntity;
+  context.Pair.set(existing ? { ...existing, ...updated } : updated);
+});
+
+OstiumPairsInfos.TradeInitialAccFeesStored.handler(async ({ event, context }) => {
+  // Store initial accumulated fees for a trade
+  const tradeId = event.params.tradeId.toString();
+  const trade = await context.Trade.get(tradeId);
+  if (trade) {
+    const updated: TradeEntity = {
+      ...trade,
+      rollover: event.params.rollover,
+      funding: event.params.funding,
+    } as unknown as TradeEntity;
+    context.Trade.set(updated);
+  }
+});
+
+OstiumPairsInfos.VaultFeePercentUpdated.handler(async ({ event, context }) => {
+  const pairId = event.params.pairIndex.toString();
+  const existing = await context.Pair.get(pairId);
+  if (existing) {
+    const updated: PairEntity = {
+      ...existing,
+      vaultFeePercent: event.params.value,
+    };
+    context.Pair.set(updated);
+  }
 });
 
 // =====================
@@ -314,6 +589,22 @@ OstiumTrading.OpenLimitPlaced.handler(async ({ event, context }) => {
     pair_id: event.params.pairIndex.toString(),
     isActive: true,
     initiatedAt: BigInt(event.block.timestamp),
+    updatedAt: BigInt(event.block.timestamp),
+    block: BigInt(event.block.number),
+    uniqueId: `${event.params.trader}_${event.params.pairIndex}_${event.params.index}`,
+    orderId: "",
+    limitType: "open_limit",
+    executionStarted: 0n,
+    // Note: These fields would ideally be populated from the limit order struct
+    // which would need to be fetched via Effect API or included in event data
+    collateral: 0n,
+    leverage: 0n,
+    notional: 0n,
+    tradeNotional: 0n,
+    takeProfitPrice: 0n,
+    stopLossPrice: 0n,
+    openPrice: 0n,
+    isBuy: false,
   } as LimitEntity;
   const existingLimit = await context.Limit.get(limitId);
   context.Limit.set(existingLimit ? { ...existingLimit, ...limit } : limit);
@@ -366,6 +657,33 @@ OstiumTrading.OpenLimitPlaced.handler(async ({ event, context }) => {
     ),
   } as unknown as MetaDataEntity;
   context.MetaData.set(metaUpdated);
+});
+
+OstiumTrading.Paused.handler(async ({ event, context }) => {
+  const meta = await getMeta(context);
+  const updated: MetaDataEntity = {
+    ...meta,
+    isTradingPaused: event.params.paused,
+  } as unknown as MetaDataEntity;
+  context.MetaData.set(updated);
+});
+
+OstiumTrading.MarketOrdersTimeoutUpdated.handler(async ({ event, context }) => {
+  const meta = await getMeta(context);
+  const updated: MetaDataEntity = {
+    ...meta,
+    marketOrdersTimeout: event.params.value,
+  } as unknown as MetaDataEntity;
+  context.MetaData.set(updated);
+});
+
+OstiumTrading.MaxAllowedCollateralUpdated.handler(async ({ event, context }) => {
+  const meta = await getMeta(context);
+  const updated: MetaDataEntity = {
+    ...meta,
+    maxAllowedCollateral: event.params.value,
+  } as unknown as MetaDataEntity;
+  context.MetaData.set(updated);
 });
 
 // =====================
@@ -498,9 +816,18 @@ OstiumTradingCallbacks.MarketOpenExecuted.handler(
             event.params.tradeNotional
           ),
         } as unknown as UserPairStatEntity;
-        context.UserPairStat.set(ups ? { ...ups, ...upsUpdated } : upsUpdated);
+                context.UserPairStat.set(ups ? { ...ups, ...upsUpdated } : upsUpdated);
+        
+        // Update UserGroupStat
+        await updateUserGroupStat(context, userId, pairId, {
+          totalOpenTrades: add(undefined, 1n),
+          totalTrades: add(undefined, 1n),
+          totalMarketOrders: add(undefined, 1n),
+          totalVolume: add(undefined, event.params.tradeNotional),
+          totalOpenVolume: add(undefined, event.params.tradeNotional),
+        });
       }
-
+      
       // Update pair statistics
       if (pairId) {
         const pair = await context.Pair.get(pairId);
@@ -672,6 +999,17 @@ OstiumTradingCallbacks.MarketCloseExecuted.handler(
           context.UserPairStat.set(
             ups ? { ...ups, ...upsUpdated } : upsUpdated
           );
+          
+          // Update UserGroupStat
+          await updateUserGroupStat(context, userId, pairId, {
+            totalOpenTrades: add(undefined, -1n),
+            totalClosedVolume: add(undefined, tr.tradeNotional as unknown as bigint),
+            totalOpenVolume: add(undefined, -(tr.tradeNotional as unknown as bigint)),
+            totalClosedCollateral: add(undefined, tr.collateral as unknown as bigint),
+            totalProfitTrades: add(undefined, isProfit ? 1n : 0n),
+            totalLossTrades: add(undefined, isProfit ? 0n : 1n),
+            totalPnL: add(undefined, event.params.percentProfit),
+          });
         }
       }
 
@@ -1203,6 +1541,15 @@ OstiumTradingCallbacks.OracleFeeCharged.handler(async ({ event, context }) => {
   context.MetaData.set(metaUpdated);
 });
 
+OstiumTradingCallbacks.Paused.handler(async ({ event, context }) => {
+  const meta = await getMeta(context);
+  const updated: MetaDataEntity = {
+    ...meta,
+    isCallbackPaused: event.params.paused,
+  } as unknown as MetaDataEntity;
+  context.MetaData.set(updated);
+});
+
 // =====================
 // VAULT HANDLERS
 // =====================
@@ -1474,6 +1821,36 @@ OstiumVault.ShareToAssetsPriceUpdated.handler(async ({ event, context }) => {
   }
 });
 
+OstiumVault.MaxDiscountPUpdated.handler(async ({ event, context }) => {
+  const vaultId = "ostium_vault";
+  const vault = await context.Vault.get(vaultId);
+  const updatedVault: VaultEntity = {
+    id: vaultId,
+    maxDiscountP: event.params.value,
+  } as unknown as VaultEntity;
+  context.Vault.set(vault ? { ...vault, ...updatedVault } : updatedVault);
+});
+
+OstiumVault.MaxDiscountThresholdPUpdated.handler(async ({ event, context }) => {
+  const vaultId = "ostium_vault";
+  const vault = await context.Vault.get(vaultId);
+  const updatedVault: VaultEntity = {
+    id: vaultId,
+    maxDiscountThresholdP: event.params.value,
+  } as unknown as VaultEntity;
+  context.Vault.set(vault ? { ...vault, ...updatedVault } : updatedVault);
+});
+
+OstiumVault.CurrentMaxSupplyUpdated.handler(async ({ event, context }) => {
+  const vaultId = "ostium_vault";
+  const vault = await context.Vault.get(vaultId);
+  const updatedVault: VaultEntity = {
+    id: vaultId,
+    currentMaxSupply: event.params.value,
+  } as unknown as VaultEntity;
+  context.Vault.set(vault ? { ...vault, ...updatedVault } : updatedVault);
+});
+
 OstiumVault.AccPnlPerTokenUsedUpdated.handler(async ({ event, context }) => {
   // Update Vault entity
   const vaultId = "ostium_vault";
@@ -1559,6 +1936,19 @@ OstiumVault.RewardDistributed.handler(async ({ event, context }) => {
   }
 });
 
+OstiumVault.Approval.handler(async ({ event, context }) => {
+  // Update User.keeperAllowance if spender is a keeper/bot address
+  // Note: In a real implementation, you'd want to check if the spender
+  // is a known keeper address before updating keeperAllowance
+  const userId = event.params.owner.toLowerCase();
+  const user = await context.User.get(userId);
+  const userUpdated: UserEntity = {
+    id: userId,
+    keeperAllowance: event.params.value,
+  } as unknown as UserEntity;
+  context.User.set(user ? { ...user, ...userUpdated } : userUpdated);
+});
+
 // NFT Transfer handler
 OstiumLockedDepositNft.Transfer.handler(async ({ event, context }) => {
   // Update LpNFT owner on transfer (skip mint/burn with zero addresses)
@@ -1617,6 +2007,44 @@ OstiumLockedDepositNft.Transfer.handler(async ({ event, context }) => {
     context.LpShare.set(updatedNewShare);
   }
 });
+
+// =====================
+// TRADING STORAGE HANDLERS
+// =====================
+
+OstiumTradingStorage.MaxOpenInterestUpdated.handler(async ({ event, context }) => {
+  const pairId = event.params.pairIndex.toString();
+  const existing = await context.Pair.get(pairId);
+  if (existing) {
+    const updated: PairEntity = {
+      ...existing,
+      maxOI: event.params.value,
+    };
+    context.Pair.set(updated);
+  }
+});
+
+OstiumTradingStorage.MaxTradesPerPairUpdated.handler(async ({ event, context }) => {
+  const meta = await getMeta(context);
+  const updated: MetaDataEntity = {
+    ...meta,
+    maxTradesPerPair: event.params.value,
+  } as unknown as MetaDataEntity;
+  context.MetaData.set(updated);
+});
+
+OstiumTradingStorage.MaxPendingMarketOrdersUpdated.handler(async ({ event, context }) => {
+  const meta = await getMeta(context);
+  const updated: MetaDataEntity = {
+    ...meta,
+    maxPendingMarketOrders: event.params.value,
+  } as unknown as MetaDataEntity;
+  context.MetaData.set(updated);
+});
+
+// =====================
+// OPEN PNL HANDLERS
+// =====================
 
 // Last trade price handler
 OstiumOpenPnl.LastTradePriceUpdated.handler(async ({ event, context }) => {
