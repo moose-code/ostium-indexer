@@ -44,6 +44,10 @@ function add(a?: bigint, b?: bigint): bigint {
   return (a ?? 0n) + (b ?? 0n);
 }
 
+function sub(a?: bigint, b?: bigint): bigint {
+  return (a ?? 0n) - (b ?? 0n);
+}
+
 // =====================
 // PAIR STORAGE HANDLERS
 // =====================
@@ -1437,6 +1441,37 @@ OstiumVault.ShareToAssetsPriceUpdated.handler(async ({ event, context }) => {
   context.ShareToAssetsPriceDaily.set(
     daily ? { ...daily, ...dailyEntity } : dailyEntity
   );
+
+  // If we know current epoch, also snapshot EpochShare for this epoch
+  const refreshedVault = await context.Vault.get(vaultId);
+  const epochMaybe = refreshedVault?.currentEpoch as unknown as
+    | bigint
+    | undefined;
+  if (epochMaybe !== undefined) {
+    const epochId = epochMaybe.toString();
+    const prevEpochId = epochMaybe > 0n ? (epochMaybe - 1n).toString() : "0";
+    const prevSnap = await context.EpochShare.get(prevEpochId);
+    const existingSnap = await context.EpochShare.get(epochId);
+    const epochEntity: EpochShareEntity = {
+      id: epochId,
+      epoch: epochMaybe,
+      sharePrice: event.params.value as unknown as bigint,
+      rewardsPerToken:
+        (refreshedVault?.rewardsPerToken as unknown as bigint) ?? 0n,
+      sharePriceDiff: sub(
+        event.params.value as unknown as bigint,
+        (prevSnap?.sharePrice as unknown as bigint | undefined) ?? 0n
+      ),
+      rewardsPerTokenDiff: sub(
+        (refreshedVault?.rewardsPerToken as unknown as bigint) ?? 0n,
+        (prevSnap?.rewardsPerToken as unknown as bigint | undefined) ?? 0n
+      ),
+      timestamp: BigInt(event.block.timestamp),
+    } as unknown as EpochShareEntity;
+    context.EpochShare.set(
+      existingSnap ? { ...existingSnap, ...epochEntity } : epochEntity
+    );
+  }
 });
 
 OstiumVault.AccPnlPerTokenUsedUpdated.handler(async ({ event, context }) => {
@@ -1446,8 +1481,41 @@ OstiumVault.AccPnlPerTokenUsedUpdated.handler(async ({ event, context }) => {
   const updatedVault: VaultEntity = {
     id: vaultId,
     accPnlPerTokenUsed: event.params.newAccPnlPerTokenUsed,
+    currentEpoch: event.params.newEpoch,
   } as unknown as VaultEntity;
   context.Vault.set(vault ? { ...vault, ...updatedVault } : updatedVault);
+
+  // Create/Update EpochShare snapshot for this epoch
+  const epoch = event.params.newEpoch as unknown as bigint;
+  const epochId = epoch.toString();
+  const prevEpoch = epoch > 0n ? epoch - 1n : 0n;
+  const prevEpochId = prevEpoch.toString();
+
+  const currentVault = await context.Vault.get(vaultId);
+  const sharePrice = (currentVault?.sharePrice as unknown as bigint) ?? 0n;
+  const rewardsPerToken =
+    (currentVault?.rewardsPerToken as unknown as bigint) ?? 0n;
+
+  const prevSnap = await context.EpochShare.get(prevEpochId);
+  const existingSnap = await context.EpochShare.get(epochId);
+  const epochEntity: EpochShareEntity = {
+    id: epochId,
+    epoch: epoch,
+    sharePrice: sharePrice,
+    rewardsPerToken: rewardsPerToken,
+    sharePriceDiff: sub(
+      sharePrice,
+      (prevSnap?.sharePrice as unknown as bigint | undefined) ?? 0n
+    ),
+    rewardsPerTokenDiff: sub(
+      rewardsPerToken,
+      (prevSnap?.rewardsPerToken as unknown as bigint | undefined) ?? 0n
+    ),
+    timestamp: BigInt(event.block.timestamp),
+  } as unknown as EpochShareEntity;
+  context.EpochShare.set(
+    existingSnap ? { ...existingSnap, ...epochEntity } : epochEntity
+  );
 });
 
 OstiumVault.RewardDistributed.handler(async ({ event, context }) => {
@@ -1459,6 +1527,36 @@ OstiumVault.RewardDistributed.handler(async ({ event, context }) => {
     rewardsPerToken: event.params.accRewardsPerToken,
   } as unknown as VaultEntity;
   context.Vault.set(vault ? { ...vault, ...updatedVault } : updatedVault);
+
+  // Snapshot EpochShare on rewards update if epoch is known
+  const refreshedVault = await context.Vault.get(vaultId);
+  const epochMaybe = refreshedVault?.currentEpoch as unknown as
+    | bigint
+    | undefined;
+  if (epochMaybe !== undefined) {
+    const epochId = epochMaybe.toString();
+    const prevEpochId = epochMaybe > 0n ? (epochMaybe - 1n).toString() : "0";
+    const prevSnap = await context.EpochShare.get(prevEpochId);
+    const existingSnap = await context.EpochShare.get(epochId);
+    const epochEntity: EpochShareEntity = {
+      id: epochId,
+      epoch: epochMaybe,
+      sharePrice: (refreshedVault?.sharePrice as unknown as bigint) ?? 0n,
+      rewardsPerToken: event.params.accRewardsPerToken as unknown as bigint,
+      sharePriceDiff: sub(
+        (refreshedVault?.sharePrice as unknown as bigint) ?? 0n,
+        (prevSnap?.sharePrice as unknown as bigint | undefined) ?? 0n
+      ),
+      rewardsPerTokenDiff: sub(
+        event.params.accRewardsPerToken as unknown as bigint,
+        (prevSnap?.rewardsPerToken as unknown as bigint | undefined) ?? 0n
+      ),
+      timestamp: BigInt(event.block.timestamp),
+    } as unknown as EpochShareEntity;
+    context.EpochShare.set(
+      existingSnap ? { ...existingSnap, ...epochEntity } : epochEntity
+    );
+  }
 });
 
 // NFT Transfer handler
